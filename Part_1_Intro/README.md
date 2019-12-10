@@ -1,4 +1,4 @@
-# Part One: An Introduction to Machine Learning and R
+# Part One: An Introduction to Machine Learning 
 
 These notebooks/pdfs accompany Chapter 2: Learning R
 
