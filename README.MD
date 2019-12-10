@@ -5,19 +5,22 @@ Materials to accompany the book, still in progress.
 
 Table of Contents
 
-Part One: Introduction to Machine Lea
+Part One: Introduction to Machine Learning
+
 1. The Craft of Machine Learning
 2. Learning R
 3. Data Visualization in R
 4. The Craft 1: Planning to Learn (include pattern)
 
 Part Two: Linear Models
+
 5. Linear Regression
 6. Logistic Regression
 7. Naive Bayes
 8. The Craft 2: Predictive Analytics
 
 Part Three: Modern R
+
 9. The Tidyverse
 10. ggplot2
 11. The Craft 3: Data Wrangling
@@ -29,6 +32,7 @@ Part Four: Searching for Similarity
 15: The Craft 4: Feature Engineering
 
 Part Five: Kernel Methods and Ensemble Methods
+
 16. Support Vector Machines
 17. Ensemble Methods
 18. Semi-supervised Learning
