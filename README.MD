@@ -30,14 +30,14 @@ Part Four: Searching for Similarity
 12. Instance-based learning with kNN
 13. Clustering
 14. Decision Trees and Random Forests
-15: The Craft 4: Feature Engineering
+15. The Craft 4: Feature Engineering
 
 Part Five: Kernel Methods and Ensemble Methods
 
 16. Support Vector Machines
 17. Ensemble Methods
 18. Semi-supervised Learning
-19: The Craft 5: Choosing Algorithms
+19. The Craft 5: Choosing Algorithms
 
 Part Six: Neural Networks
 
