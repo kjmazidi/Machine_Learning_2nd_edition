@@ -10,7 +10,7 @@ Part One: Introduction to Machine Learning
 1. The Craft of Machine Learning
 2. Learning R
 3. Data Visualization in R
-4. The Craft 1: Planning to Learn (include pattern)
+4. The Craft 1: Planning to Learn 
 
 Part Two: Linear Models
 
