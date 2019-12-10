@@ -21,7 +21,7 @@
 * 7-3 Naive Bayes on breast cancer data
 * 7-4 Naive Bayes from scratch
 
-## Chapter 8: Predictive Analytics
+## Chapter 8: Predictive Modeling
 
 * 8-1 idk
 * 8-2 idk
