@@ -26,6 +26,7 @@ Part Three: Modern R
 11. The Craft 3: Data Wrangling
 
 Part Four: Searching for Similarity
+
 12. Instance-based learning with kNN
 13. Clustering
 14. Decision Trees and Random Forests
@@ -39,11 +40,13 @@ Part Five: Kernel Methods and Ensemble Methods
 19: The Craft 5: Choosing Algorithms
 
 Part Six: Neural Networks
+
 20. Neural Networks
 21. Deep Learning with Keras
 22. The Craft 6: Big(ish) Data
 
 Part Seven: Modeling the World
+
 23. Bayes Nets
 24. Markov Models
 25. Reinforcement Learning
