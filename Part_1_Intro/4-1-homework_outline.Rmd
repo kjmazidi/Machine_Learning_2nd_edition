@@ -1,0 +1,56 @@
+---
+title: "Homework n"
+author: Your Name Here
+output: html_notebook
+---
+```{r}
+
+```
+
+# Step 1: Identify objective(s).
+
+# Step 2: Data collection.
+
+Describe the collected data in terms of size and the meaning of columns.
+
+# Step 3: Data Exploration
+
+Use statistical functions and graphs to get to know the data.
+
+```{r}
+# your code here
+```
+
+# Step 4: Formulate a learning objective
+
+What do you want to learn from the data?
+
+# Step 5: Divide the data into train/test sets
+
+```{r}
+# your code here
+```
+
+# Step 6: Train the algoirthm on the training data
+
+```{r}
+# your code here
+```
+
+# Step 7: Make predictions on the test data
+
+```{r}
+# your code here
+```
+
+# Step 8: Evaluate 
+
+
+```{r}
+# your code here
+```
+
+# Step 9: Identify approaches for improvement
+
+# Step 10: Repeat steps as required
+
