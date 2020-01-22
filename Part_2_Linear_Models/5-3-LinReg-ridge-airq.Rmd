@@ -1,0 +1,83 @@
+---
+title: "Ridge Regression"
+author: "Karen Mazidi"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+Compare linear regression and ridge regression on the airquality data set.
+
+### Data cleaning
+
+First, remove rows with NAs using complete.cases(). Then remove the Day column.
+
+```{r}
+df <- airquality[complete.cases(airquality[, 1:5]),]
+df <- df[,-6]
+```
+
+### Train and test sets for linear regression
+
+Divide into train and test sets, then create a model predicting Ozone from the other columns. 
+
+```{r}
+set.seed(1234)
+i <- sample(1:nrow(df), .75*nrow(df), replace=FALSE)
+train <- df[i,]
+test <- df[-i,]
+lm1 <- lm(Ozone~., data=train)
+pred <- predict(lm1, newdata=test)
+mse1 <- mean((pred-test$Ozone)^2)
+print(paste("mse=", mse1))
+```
+
+### Ridge Regression
+
+Try ridge regession using glmnet. 
+
+First use the model.matrix() function to create a matrix of the predictors. Then split into test and train.
+
+```{r}
+library(glmnet)
+x <- model.matrix(Ozone~., df)[,-1]
+y <- df$Ozone
+train_x <- x[i,]
+train_y <- y[i]
+test_x <- x[-i,]
+test_y <- y[-i]
+
+# build a ridge regression model
+rm <- glmnet(train_x, train_y, alpha=0)
+
+# use cv to see which lambda is best
+set.seed(1)
+cv_results <- cv.glmnet(train_x, train_y, alpha=0)
+plot(cv_results)
+l <- cv_results$lambda.min
+
+# get data for best lambda, which is the 99th
+# as determined by looking at rm$lambda
+pred2 <- predict(rm, s=l, newx=test_x)
+mse2 <- mean((pred2-test_y)^2)
+coef2 <- coef(rm)[,99]
+
+```
+
+### Compare mse and coefficients
+
+The ridge regression got about 10% lower mse. Notice that its coefficients are smaller in absolute value.
+
+```{r}
+print(paste("mse for linear regression = ", mse1))
+coef(lm1)
+
+```
+
+```{r}
+print(paste("mse for ridge regression = ", mse2))
+coef2
+
+```
+
