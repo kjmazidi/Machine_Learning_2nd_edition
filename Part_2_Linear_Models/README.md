@@ -23,5 +23,5 @@
 
 ## Chapter 8: Predictive Modeling
 
-* 8-1 idk
-* 8-2 idk
+* 8-1 TBD
+* 8-2 TBD
