@@ -1,0 +1,95 @@
+---
+title: "MultiClass Classification"
+author: "Karen Mazidi"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+editor_options:
+  chunk_output_type: console
+---
+
+In this notebook we look at multi-class classification with the iris data set, built into R. This is a well-known data set that takes measurements from 150 irises, equally divided into 3 species virginica, setosa and versicolor.
+
+### Data exploration
+
+Explore the data with functions and graphics. 
+
+```{r}
+attach(iris)
+str(iris)
+pairs(iris[1:4], pch = 21, bg = c("red", "yellow", "blue")[unclass(Species)])
+
+```
+
+Let's see how well Petal.Length and Petal.Width separate the classes. 
+
+```{r}
+plot(Petal.Length, Petal.Width, pch=21, bg=c("red","yellow","blue")
+     [unclass(Species)])
+
+```
+
+### One versus all
+
+In one versus all classification we will build 3 classifiers on 3 data sets:
+
+* virginica versus not 
+* setosa versus not
+* versicolor versus not
+
+```{r}
+# reclassify as virginica or not
+iris_virginica <- iris
+iris_virginica$Species <- as.factor(ifelse (iris_virginica$Species=="virginica",1,0))
+
+# reclassify as setosa or not
+iris_setosa <- iris
+iris_setosa$Species <- as.factor(ifelse (iris_setosa$Species=="setosa",1,0))
+
+# reclassify as versicolor or not
+iris_versicolor <- iris
+iris_versicolor$Species <- as.factor(ifelse (iris_versicolor$Species=="versicolor",1,0))
+```
+
+### Function for logistic regression
+
+We will write a function to handle repeated calls. 
+
+```{r}
+fun <- function(df, i){
+    train <- df[i,]
+    test <- df[-i,]
+    glm1 <- glm(Species~., data=train, family="binomial")
+    probs <- predict(glm1, newdata=test)
+    pred <- ifelse(probs>0.5, 1, 0)
+    acc <- mean(pred==test$Species)
+    print(paste("accuracy = ", acc))
+    table(pred, test$Species) 
+}
+```
+
+
+
+### Virginica
+
+```{r}
+set.seed(1234)
+i <- sample(1:150, 100, replace=FALSE)
+fun(iris_virginica, i)
+```
+### Setosa
+
+```{r}
+fun(iris_setosa, i)
+```
+
+### Versicolor
+
+```{r}
+fun(iris_versicolor, i)
+```
+
+
+
+

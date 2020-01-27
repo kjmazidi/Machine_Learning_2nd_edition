@@ -1,0 +1,109 @@
+---
+title: "Logistic Regression with the Titanic Data"
+author: "Karen Mazidi"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+editor_options:
+  chunk_output_type: console
+---
+
+
+There are many versions of the Titanic data. The one used here was downloaded [from this link.](biostat.mc.vanderbilt.edu/wiki/pub/Main/DataSets/titanic3.xls) and then converted to csv format.
+
+
+### Load the data
+
+```{r}
+df <- read.csv("data/titanic3.csv", header=TRUE)
+str(df)
+```
+
+### Data cleaning
+
+First we subset the data frame because we only care about columns pclass, survived, sex, and age. Then we make survived and pclass factors, sex is already a factor.
+
+```{r}
+df <- df[,c(1,2,4,5)]
+df$pclass <- factor(df$pclass)
+df$survived <- factor(df$survived)
+head(df)
+```
+
+### Handle missing values
+
+We first find out how many missing values we have for each of our 4 columns with the sapply() function. The first argument is the object we wish to apply the function to. In this case the function sums the number of NAs for each column of the data frame.
+
+
+
+
+```{r}
+sapply(df, function(x) sum(is.na(x)==TRUE))
+```
+
+
+We see that there are no NAs for sex but one NA each for pclass and survived. We can just delete those rows. There are 264 observations out of the total 1310 where we have NA for the age. We could just delete those but that's a lot of data to lose. Instead we will replace the NAs with the median age. 
+
+```{r}
+df <- df[!is.na(df$pclass),]
+df <- df[!is.na(df$survived),]
+df$age[is.na(df$age)] <- median(df$age,na.rm=T)
+
+```
+
+### Divide into train and test
+
+```{r}
+set.seed(1234)
+i <- sample(1:nrow(df), 0.75*nrow(df), replace=FALSE)
+train <- df[i,]
+test <- df[-i,]
+```
+
+### Build a logistic regression model
+
+```{r}
+glm1 <- glm(survived~., data=train, family="binomial")
+summary(glm1)
+```
+### Evaluate on the test set
+
+```{r}
+probs <- predict(glm1, newdata=test, type="response")
+pred <- ifelse(probs>0.5, 1, 0)
+acc <- mean(pred==test$survived)
+print(paste("accuracy = ", acc))
+table(pred, test$survived)
+```
+
+### Additional metrics
+
+The confusion matrix in the caret package gives us more information than our simple table above. One of the more useful statistics is the Kappa value which adjusts for the distribution of the data set. In this case the data set was only slightly unbalanced, with about 60% survived to 40$ not. 
+
+Note that the vector 'pred' was an integer vector while survived is a factor. The pred vector needs to be converted to a factor for the confusion matrix code.
+
+```{r}
+library(caret)
+confusionMatrix(as.factor(pred), reference=test$survived)
+```
+
+###ROC
+
+The ROC is a curve that plots the true positive rate (TPR) against the false positive rate (FPR) at various threshold settings. The AUC is the area under the ROC curve. A good AUC is close to 1 than 0.5. Also we like to see the ROC shoot up rather quickly.
+
+```{r}
+library(ROCR)
+p <- predict(glm1, newdata=test, type="response")
+pr <- prediction(p, test$survived)
+# TPR = sensitivity, FPR=specificity
+prf <- performance(pr, measure = "tpr", x.measure = "fpr")
+plot(prf)
+```
+
+```{r}
+auc <- performance(pr, measure = "auc")
+auc <- auc@y.values[[1]]
+auc
+```
+

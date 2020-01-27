@@ -1,0 +1,111 @@
+---
+title: "Logistic Regression on the Plasma Data"
+author: "Karen Mazidi"
+output:
+  pdf_document: default
+  html_notebook: default
+  html_document:
+    df_print: paged
+editor_options:
+  chunk_output_type: inline
+---
+
+Logistic regression example using the plasma data set in package HSAUR.
+
+### Data exploration
+
+We can read more about the plasma data set by typing "?plasma" at the console, after package HSAUR is loaded. We want to learn to predict ESR>20 or not, based on the levels of the plasma proteins fibrinogen and globulin. ESR stands for erythrocyte sedimentation rate, the rate at which red blood cells settle in blood plasma. Values >20 indicate some possible associations with various health conditions. 
+
+```{r}
+library(HSAUR)
+attach(plasma)
+str(plasma)
+head(plasma)
+attach(plasma)
+```
+### Plot the data
+
+The first pair of plots show us that observations where ESR>20 are rarer. This is indicated by the thinner boxes because we set varwidth=TRUE in the bloxplot call. More importantly, the boxplots show that ESR>20 observations are associated with slightly higher levels of globulin and significantly higher levels of fibronogen. 
+
+The second set of pots are conditional density plots. We can make the same observations as the box plots. Here they are just visualized differently. The total probability space is the rectangle, with the lighter grey indicating ESR>20.
+
+```{r}
+par(mfrow=c(1,2))
+plot(ESR, fibrinogen, main="Fibrinogen", varwidth=TRUE)
+plot(ESR, globulin, main="Globulin", varwidth=TRUE)
+
+par(mfrow=c(1,2))
+cdplot(ESR~fibrinogen)
+cdplot(ESR~globulin)
+```
+### Train and test sets
+
+Even though our data is small, we will go ahead and divide it into train and test sets. 
+
+```{r}
+set.seed(1234)
+i <- sample(1:nrow(plasma), 0.75*nrow(plasma), replace=FALSE)
+train <- plasma[i,]
+test <- plasma[-i,]
+```
+
+
+
+### Build a logistic regression model
+
+Our first model uses only fibronogen as a predictor. On our small test data we got about 88% accuracy. The table shows that all test observations were predicted as not ESR>20 and one of the 8 observations actually was ESR>20. Internally, the ESR>20 factor is coded as 1 for not >20 and 2 for ESR>20. This is why we compare them as.integer(). 
+
+```{r}
+glm1 <- glm(ESR~fibrinogen, data=train, family=binomial)
+summary(glm1)
+probs <- predict(glm1, newdata=test, type="response")
+pred <- ifelse(probs>0.5, 2, 1)
+acc1 <- mean(pred==as.integer(test$ESR))
+print(paste("glm1 accuracy = ", acc1))
+table(pred, as.integer(test$ESR))
+
+```
+
+### What does it mean?
+
+Let's explore the meaning of the coefficient.
+
+```{r}
+fibro <- glm1$coefficients[2]
+intercept <- glm1$coefficients[1]
+
+log_odds <- function(x, fibro, intercept){
+  intercept + fibro * x
+}
+
+x <- seq(from=2.25, to=5.0, by=0.25)
+y <- log_odds(x, fibro, intercept)
+par(mfrow=c(1,2))
+plot(x,y, main="log odds", ylab="")
+
+prob <- exp(y) / (1 + exp(y))
+plot(x, prob, main="probabilities", ylab="")
+```
+
+
+### Build another model
+
+This model uses both predictors. On the test set we got the same accuracy. 
+
+```{r}
+glm2 <- glm(ESR~fibrinogen+globulin, data=train, family=binomial)
+summary(glm2)
+probs <- predict(glm1, newdata=test, type="response")
+pred <- ifelse(probs>0.5, 2, 1)
+acc2 <- mean(pred==as.integer(test$ESR))
+print(paste("glm2 accuracy = ", acc2))
+table(pred, as.integer(test$ESR))
+```
+
+### Compare the models with anova()
+
+The second model is only slightly better than the first. The residuals dropped by only 2 points, and the p-value is not small. 
+
+```{r}
+anova(glm1, glm2)
+```
