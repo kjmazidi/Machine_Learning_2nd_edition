@@ -17,9 +17,7 @@
 ## Chapter 7: Naive Bayes
 
 * 7-1 Naive Bayes on the titanic data
-* 7-2 Naive Bayes on text data
-* 7-3 Naive Bayes on breast cancer data
-* 7-4 Naive Bayes from scratch
+* 7-2 Naive Bayes from scratch
 
 ## Chapter 8: Predictive Modeling
 
