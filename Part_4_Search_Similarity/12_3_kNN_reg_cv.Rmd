@@ -1,0 +1,96 @@
+---
+output:
+  pdf_document: default
+editor_options: 
+  chunk_output_type: console
+---
+# kNN Clustering - Regression
+## Using 10-fold cross validations
+### Karen Mazidi
+
+Load the data
+
+```{r}
+library(ISLR)
+df <- Auto[]
+df$origin <- as.integer(df$origin)
+# subset to columns mpg, weight, year, origin
+df <- data.frame(scale(df[, c(1, 5, 7, 8)]  ))
+```
+
+### Create the 10 folds
+
+We could do this manually but there is a function in caret that does this. Since the Auto data is a little less than 400 rows, we expect each of the 10 folds to be of legth 40 or less. We confirm that with sapply.
+
+
+```{r}
+library(caret)
+set.seed(1234)
+folds <- createFolds(df$mpg, k=10)
+sapply(folds, length)
+```
+
+### Look at the fold indices
+
+To get a better idea of the folds, let's just print the indices for each fold.
+
+```{r}
+for (i in 1:10){
+  print(folds[[i]])
+}
+```
+
+### Perform 10-fold cv
+
+For now we will just let k=3 and perform 10-fold cv, then average the correlation and mse values.
+
+```{r}
+test_mse <- rep(0, 10)
+test_cor <- rep(0, 10)
+for (i in 1:10){
+  fit <- knnreg(df[-folds[[i]], 2:4], df$mpg[-folds[[i]]], k=3)
+  pred <- predict(fit, df[folds[[i]], 2:4])
+  test_cor[i] <- cor(pred, df$mpg[folds[[i]]])
+  test_mse[i] <- mean((pred - df$mpg[folds[[i]]])^2)
+}
+print(paste("Average correlation is ", round(mean(test_cor), 2)))
+print(paste("range is ", range(test_cor)))
+print(paste("Average mse is ", round(mean(test_mse), 2)))
+print(paste("range is ", range(test_mse)))
+```
+
+### Try with various k
+
+We modify the code above to be an anonymouse function called by sapply.  
+
+
+```{r}
+# try various values for k
+k_values <- seq(1, 39, 2)
+results <- sapply(k_values, function(k){
+  mse_k <- rep(0, 10)
+  cor_k <- rep(0, 10)
+  for (i in 1:10){
+    fit <- knnreg(df[-folds[[i]], 2:4], df$mpg[-folds[[i]]], k=k)
+    pred <- predict(fit, df[folds[[i]], 2:4])
+    cor_k[i] <- cor(pred, df$mpg[folds[[i]]])
+    mse_k[i] <- mean((pred - df$mpg[folds[[i]]])^2)
+  }
+  #print(paste(mean(cor_k), mean(mse_k)))
+  list(mean(cor_k), mean(mse_k))
+})
+# reshape results into matrix
+m <- matrix(results, nrow=20, ncol=2, byrow=TRUE)
+```
+
+
+### Examine results
+
+Plot the correlation and mse for each value of k.
+
+```{r}
+par(mfrow=c(2, 1))
+plot(1:20, unlist(m[,1]), lwd=2, type="o", col='red', ylab="Correlation")
+plot(1:20, unlist(m[,2]), lwd=2, type="o", col='blue', ylab="MSE")
+
+```

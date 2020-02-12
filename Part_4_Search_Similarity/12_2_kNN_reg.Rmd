@@ -1,0 +1,115 @@
+---
+editor_options:
+  chunk_output_type: console
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+# kNN Clustering - Regression
+### Karen Mazidi
+
+This example uses the Auto data set in package ISLR. First we try linear regression as a baseline and then see if knn can beat the linear model. 
+
+```{r}
+library(ISLR)
+attach(Auto)
+Auto$origin <- as.factor(origin)
+```
+
+Build a linear model with all predictors. 
+
+```{r}
+lm1 <- lm(mpg ~.-name, data=Auto)
+summary(lm1)
+```
+
+## Train and test on a linear model
+
+The results from lm1 indicated that weight, year, and origin appear to be significant predictors so let's build a model just from those. 
+
+First, randomly sample 80% from the data set, and let those indices be for training while the others are for the test set. 
+
+```{r}
+set.seed(1958)  # for reproducible results
+i <- sample(1:nrow(Auto), round(nrow(Auto)*0.8), replace=FALSE)
+train <- Auto[i,]
+test <- Auto[-i,]
+lm2 <- lm(mpg~weight+year+origin, data=train)
+pred <- predict(lm2, newdata=test)
+cor(pred, test$mpg)
+mse <- mean((pred - test$mpg)^2)
+```
+
+
+The correlation for the linear model was 91% which is good. Can kNN do better?
+
+### kNN for regression
+
+We will use the same train and test set as we used for the linear model. We will train on weight, year and origin as for the linear model.
+
+```{r}
+library(caret)
+library(DMwR)
+train$origin <- as.integer(train$origin)
+test$origin <- as.integer(test$origin)
+fit <- knnreg(train[,2:8],train[,1],k=3)
+predictions <- predict(fit, test[,2:8])
+cor(predictions, test$mpg)
+mse <- mean((predictions - test$mpg)^2)
+
+```
+
+So the results were not as good for knn, the correlation was 81%.
+
+As discussed in class, we know that clustering algorithms work best if the data is scaled, so let's scale the data and try again.
+
+```{r}
+Auto$origin <- as.integer(Auto$origin)
+scaled_data <- scale(Auto[,c(1, 5,7,8)])
+df <- data.frame(scale(Auto[,c(1, 5,7,8)])) # just mpg, weight, year, origin
+train <- df[i,]
+test <- df[-i,]
+fit <- knnreg(train[,2:4],train[,1],k=3)
+predictions <- predict(fit, test[,2:4])
+cor <- cor(predictions, test$mpg)
+mse <- mean((predictions - test$mpg)^2)
+
+```
+
+Wow, scaling improved the correlation to 92% which is a little better than the linear model.
+
+### Finding the best k
+
+Try various values of k and plot the results. 
+
+```{r}
+cor_k <- rep(0, 20)
+mse_k <- rep(0, 20)
+i <- 1
+for (k in seq(1, 39, 2)){
+  fit_k <- knnreg(train[,2:4],train[,1], k=k)
+  pred_k <- predict(fit_k, test[,2:4])
+  cor_k[i] <- cor(pred_k, test$mpg)
+  mse_k[i] <- mean((pred_k - test$mpg)^2)
+  print(paste("k=", k, cor_k[i], mse_k[i]))
+  i <- i + 1
+}
+
+plot(1:20, cor_k, lwd=2, col='red', ylab="", yaxt='n')
+par(new=TRUE)
+plot(1:20, mse_k, lwd=2, col='blue', labels=FALSE, ylab="", yaxt='n')
+```
+### k=15
+
+The results above indicate that k=15 is best. We run the model above. It is slightly better than k=3.
+
+```{r}
+fit_15 <- knnreg(train[,2:4],train[,1],k=3)
+predictions_15 <- predict(fit_15, test[,2:4])
+cor_15 <- cor(predictions_15, test$mpg)
+mse_15 <- mean((predictions_15 - test$mpg)^2)
+```
+
+
+
