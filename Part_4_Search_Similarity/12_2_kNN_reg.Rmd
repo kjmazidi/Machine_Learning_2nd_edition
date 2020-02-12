@@ -1,6 +1,6 @@
 ---
 editor_options:
-  chunk_output_type: console
+  chunk_output_type: inline
 output:
   pdf_document: default
   html_document:
@@ -37,12 +37,14 @@ train <- Auto[i,]
 test <- Auto[-i,]
 lm2 <- lm(mpg~weight+year+origin, data=train)
 pred <- predict(lm2, newdata=test)
-cor(pred, test$mpg)
-mse <- mean((pred - test$mpg)^2)
+cor_lm <- cor(pred, test$mpg)
+mse_lm <- mean((pred - test$mpg)^2)
+print(paste("cor=", cor_lm))
+print(paste("mse=", mse_lm))
 ```
 
 
-The correlation for the linear model was 91% which is good. Can kNN do better?
+The correlation for the linear model was 92% which is good. Can kNN do better?
 
 ### kNN for regression
 
@@ -50,34 +52,36 @@ We will use the same train and test set as we used for the linear model. We will
 
 ```{r}
 library(caret)
-library(DMwR)
 train$origin <- as.integer(train$origin)
 test$origin <- as.integer(test$origin)
 fit <- knnreg(train[,2:8],train[,1],k=3)
 predictions <- predict(fit, test[,2:8])
-cor(predictions, test$mpg)
-mse <- mean((predictions - test$mpg)^2)
-
+cor_knn1 <- cor(predictions, test$mpg)
+mse_knn1 <- mean((predictions - test$mpg)^2)
+print(paste("cor=", cor_knn1))
+print(paste("mse=", mse_knn1))
 ```
 
-So the results were not as good for knn, the correlation was 81%.
+So the results were not as good for knn, the correlation lower and the mse was higher.
 
 As discussed in class, we know that clustering algorithms work best if the data is scaled, so let's scale the data and try again.
 
 ```{r}
-Auto$origin <- as.integer(Auto$origin)
-scaled_data <- scale(Auto[,c(1, 5,7,8)])
-df <- data.frame(scale(Auto[,c(1, 5,7,8)])) # just mpg, weight, year, origin
-train <- df[i,]
-test <- df[-i,]
-fit <- knnreg(train[,2:4],train[,1],k=3)
-predictions <- predict(fit, test[,2:4])
-cor <- cor(predictions, test$mpg)
-mse <- mean((predictions - test$mpg)^2)
-
+train_scaled <- train[, 2:8]  # omit name and don't scale mpg
+means <- sapply(train_scaled, mean)
+stdvs <- sapply(train_scaled, sd)
+train_scaled <- scale(train_scaled, center=means, scale=stdvs)
+test_scaled <- scale(test[, 2:8], center=means, scale=stdvs)
+                      
+fit <- knnreg(train_scaled, train$mpg, k=3)
+predictions <- predict(fit, test_scaled)
+cor_knn2 <- cor(predictions, test$mpg)
+mse_knn2 <- mean((predictions - test$mpg)^2)
+print(paste("cor=", cor_knn2))
+print(paste("mse=", mse_knn2))
 ```
 
-Wow, scaling improved the correlation to 92% which is a little better than the linear model.
+Wow, scaling improved the results. Correlation is higher and mse is lower than the liner model. 
 
 ### Finding the best k
 
@@ -88,8 +92,8 @@ cor_k <- rep(0, 20)
 mse_k <- rep(0, 20)
 i <- 1
 for (k in seq(1, 39, 2)){
-  fit_k <- knnreg(train[,2:4],train[,1], k=k)
-  pred_k <- predict(fit_k, test[,2:4])
+  fit_k <- knnreg(train_scaled,train$mpg, k=k)
+  pred_k <- predict(fit_k, test_scaled)
   cor_k[i] <- cor(pred_k, test$mpg)
   mse_k[i] <- mean((pred_k - test$mpg)^2)
   print(paste("k=", k, cor_k[i], mse_k[i]))
@@ -100,15 +104,28 @@ plot(1:20, cor_k, lwd=2, col='red', ylab="", yaxt='n')
 par(new=TRUE)
 plot(1:20, mse_k, lwd=2, col='blue', labels=FALSE, ylab="", yaxt='n')
 ```
-### k=15
-
-The results above indicate that k=15 is best. We run the model above. It is slightly better than k=3.
+Find the best k
 
 ```{r}
-fit_15 <- knnreg(train[,2:4],train[,1],k=3)
-predictions_15 <- predict(fit_15, test[,2:4])
-cor_15 <- cor(predictions_15, test$mpg)
-mse_15 <- mean((predictions_15 - test$mpg)^2)
+which.min(mse_k)
+```
+
+```{r}
+which.max(cor_k)
+```
+The k=15 seems to be second best from the graph. Let's compare results. 
+
+### k=15
+
+We run the model above. It is slightly worse than k=3. So the plot is very informative when picking k.
+
+```{r}
+fit_15 <- knnreg(train_scaled,train$mpg,k=15)
+predictions_15 <- predict(fit_15, test_scaled)
+cor_knn15 <- cor(predictions_15, test$mpg)
+mse_knn15 <- mean((predictions_15 - test$mpg)^2)
+print(paste("cor=", cor_knn15))
+print(paste("mse=", mse_knn15))
 ```
 
 
