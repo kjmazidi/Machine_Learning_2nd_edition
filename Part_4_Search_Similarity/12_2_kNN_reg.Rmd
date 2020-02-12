@@ -113,11 +113,11 @@ which.min(mse_k)
 ```{r}
 which.max(cor_k)
 ```
-The k=15 seems to be second best from the graph. Let's compare results. 
+
 
 ### k=15
 
-We run the model above. It is slightly worse than k=3. So the plot is very informative when picking k.
+Lets pick a different k and compare results. We run the model above. It is slightly worse than k=3. So the plot is very informative when picking k.
 
 ```{r}
 fit_15 <- knnreg(train_scaled,train$mpg,k=15)
