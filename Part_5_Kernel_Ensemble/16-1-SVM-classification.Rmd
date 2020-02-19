@@ -1,0 +1,35 @@
+---
+title: "SVM Classification on the Iris Data"
+output:
+  pdf_document: default
+  html_notebook: default
+editor_options:
+  chunk_output_type: inline
+---
+
+### Load iris data and divide into train and test sets
+
+```{r}
+set.seed(1234)
+i <- sample(150, 100, replace=TRUE)
+train <- iris[i,]
+test <- iris[-i,]
+```
+
+### Run a linear SVM
+
+```{r}
+library(e1071)
+svm1 <- svm(Species~., data=train, kernel="linear", cost=10, scale=TRUE)
+plot(svm1, iris, Petal.Width ~ Petal.Length,
+     slice = list(Sepal.Width = 3, Sepal.Length = 4))
+```
+
+### Evaluate on the test data
+
+```{r}
+pred <- predict(svm1, newdata=test)
+table(pred, test$Species)
+mean(pred==test$Species)
+```
+

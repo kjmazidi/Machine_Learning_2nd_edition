@@ -1,0 +1,111 @@
+---
+title: 'XGBoost Demo: Mushroom Data Set'
+output:
+  html_document:
+    df_print: paged
+  html_notebook: default
+  pdf_document: default
+editor_options:
+  chunk_output_type: console
+---
+
+This notebook is adapted from an [R-bloggers post](https://www.r-bloggers.com/an-introduction-to-xgboost-r-package/).
+
+The XGBoost library in R optimizes the boosting trees algorithm. XGBoost has reeived a lot of attention due to being  used in many winning solutions for machine learning challenges in Kaggle. The R package won the 2016 John M. Chambers Statitical Software Award. The award is well-deserved since this package runs faster than Python sklearn's version and another R version, gbm. The computational part of the package is written in C++ and can take advantage of multithreading on a single machine.
+
+This notebook demonstrates the use of the algorithm on the mushroom data set, built into the package.
+
+### Load the data
+
+```{r}
+require(xgboost)
+
+data(agaricus.train, package='xgboost')
+data(agaricus.test, package='xgboost')
+train <- agaricus.train
+test <- agaricus.test
+print(train$data[1, 1:5])  # look at the first 5 features
+```
+
+
+The train data wasdata has 6513 rows and 126 columns in a sparse matrix. The test data has 1611 observations. 
+
+Bor both train and test, 'data' and 'label' are separated. 
+
+```{r}
+print(dim(test$data))
+head(train$label)
+```
+
+### Set training parameters
+
+The nrounds argument specifies the number of decision trees in the final model. The objective argument is the training objective. 
+
+```{r}
+model <- xgboost(data=train$data, label=train$label,
+                 nrounds=2, objective='binary:logistic')
+```
+
+### Evaluate the model
+
+100% accuracy on this built-in data set.
+
+```{r}
+pred <- predict(model, test$data)
+pred <- ifelse(pred>0.5, 1, 0)
+table(pred, test$label)
+```
+
+### Cross validation
+
+The package also supports cross validation with function xgb.cv(). The same arguments are used as in the xgboost() algorith, with the additional argument for number of folds. 
+
+```{r}
+cv.res <- xgb.cv(data=train$data, label=train$label,
+                 nfold=5, nrounds=2, objective='binary:logistic')
+```
+
+### Plot the tree
+
+The package also includes a function to plot the tree. The code below plots the model built above. A more readable plot could be obtained by training another model with the parameter 'max.depth=2' in the xgboost() function. 
+
+Note that the DiagrammeR package is required to plot the tree.
+
+```{r}
+xgb.plot.tree(feature_names = agaricus.train$data@Dimnames[[2]], model=model)
+```
+### Ensembling trees
+
+The model above build only 2 trees. If there are many trees, the plot will be even harder to read. The package includes a function to ensemble several trees into one.
+
+```{r}
+bst <- xgboost(data = train$data, label = train$label, max.depth = 15,
+                 eta = 1, nthread = 2, nround = 30, objective = "binary:logistic",
+                 min_child_weight = 50)
+xgb.plot.multi.trees(model = bst, feature_names = agaricus.train$data@Dimnames[[2]], features.keep = 3)
+```
+
+### Examining feature importance
+
+The xgb.importance() function can accummulate the gain on each feature split on all the trees to find the most important features. If the number of features is large, importance can be summed for clusters of features. 
+
+```{r}
+bst <- xgboost(data = train$data, label = train$label, max.depth = 2,
+               eta = 1, nthread = 2, nround = 2,objective = "binary:logistic")
+importance_matrix <- xgb.importance(agaricus.train$data@Dimnames[[2]], model = bst)
+xgb.plot.importance(importance_matrix)
+```
+
+
+### Deepness
+
+Limiting the depth of trees can avoid overfitting the model. The package includes a deepness plot to determine a good choice for depth. The plots below indicates few leaves at levels 5 and 6. The bottom plot shows the normalized weighted sum of instances per leaf. 
+
+```{r}
+bst <- xgboost(data = train$data, label = train$label, max.depth = 15,
+                 eta = 1, nthread = 2, nround = 30, objective = "binary:logistic",
+                 min_child_weight = 50)
+xgb.plot.deepness(model = bst)
+
+```
+

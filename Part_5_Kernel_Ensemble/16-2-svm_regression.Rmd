@@ -1,0 +1,126 @@
+---
+title: "SVM Regression on Boston Housing Data"
+author: "Karen Mazidi"
+output:
+  pdf_document: default
+  html_notebook: default
+---
+
+### Load the data
+
+Read more about the data by typing "?Boston" at the console.
+
+```{r}
+library(MASS)
+df <- Boston[]
+str(df)
+```
+### Train and test
+
+Divide the data into 80% train and 20% test.
+
+```{r}
+set.seed(1234)
+i <- sample(nrow(Boston), 0.75*nrow(Boston), replace=FALSE)
+train <- df[i,]
+test <- df[-i,]
+```
+
+### Linear regression
+
+Build a linear regression model on the training data.
+
+```{r}
+lm1 <- lm(medv~., data=train)
+summary(lm1)
+```
+
+### Evaluate on the test data
+
+We have 82% correlation between the predicted and target home prices. The rmse of 5.09, so we are off by about $5,091 on average for the homes in the neighborhood. 
+
+```{r}
+pred_lm <- predict(lm1, newdata=test)
+cor_lm <- cor(pred_lm, test$medv)
+rmse_lm <- sqrt(mean((pred_lm - test$medv)^2))
+print(paste("cor = ", cor_lm))
+print(paste("rmse = ", rmse_lm))
+```
+
+### SVM Linear
+
+Now we try SVM regression with a linear kernel. 
+
+```{r}
+library(e1071)
+train_svm <- train[, c(1, 5, 6, 11, 13, 14)]
+test_svm <- test[, c(1, 5, 6, 11, 13, 14)]
+svm_fit1 <- svm(medv~., data=train_svm, kernel="linear", scale=TRUE)
+summary(svm_fit1)
+svm_pred1 <- predict(svm_fit1, newdata=test_svm)
+cor_svm1 <- cor(svm_pred1, test$medv)
+rmse_svm1 <- sqrt(mean((svm_pred1 - test$medv)^2))
+print(paste("cor = ", cor_svm1))
+print(paste("rmse = ", rmse_svm1))
+```
+
+### The tune() function
+
+The linear SVM did not do as well as linear regression. Next we perform some tuning to find the best cost parameter. The tune() function tries to find optimal hyperparameters for the svm using a grid search. This involves trying all the suggested parameters in a cross-validation scheme. Here we asked it to try several different cost parameters. The best model can be extracted from the tune results. 
+
+
+```{r}
+tune_svm1 <- tune(svm, medv~., data=train_svm, kernel="linear", scale=TRUE,
+               ranges=list(cost=c(0.001, 0.01, 0.1, 1, 5, 10, 100)))
+summary(tune_svm1)
+best_mod1 <- tune_svm1$best.model
+summary(best_mod1)
+```
+
+### Use the best model
+
+The best model parameters were selected on the train set. It will not necessarily perform better on the test data, and indeed it did not.
+
+```{r}
+svm_pred2 <- predict(best_mod1, newdata=test_svm)
+cor_svm2 <- cor(svm_pred2, test$medv)
+rmse_svm2 <- sqrt(mean((svm_pred2 - test$medv)^2))
+print(paste("cor = ", cor_svm2))
+print(paste("rmse = ", rmse_svm2))
+```
+
+### Try the radial kernel
+
+For radial kernel we have an additional hyperparameter, gamma.
+
+```{r}
+svm_fit2 <- svm(medv~., data=train_svm, kernel="radial", cost=1, gamma=1, scale=TRUE)
+summary(svm_fit2)
+svm_pred3 <- predict(svm_fit2, newdata=test_svm)
+cor_svm_radial <- cor(svm_pred3, test$medv)
+rmse_svm_radial <- sqrt(mean((svm_pred3 - test$medv)^2))
+print(paste("cor = ", cor_svm_radial))
+print(paste("rmse = ", rmse_svm_radial))
+```
+### Tune the hyperparameters
+
+```{r}
+set.seed(1234)
+tune_svm2 = tune(svm, medv~., data=train_svm, kernel="radial", scale=TRUE,
+                ranges=list(cost=c(0.1,1,10,100,1000),
+                gamma=c(0.5,1,2,3,4)))
+summary(tune_svm2)
+
+```
+### Tuning 
+
+Tuning was time consuming but found the best hyperparameters. 
+
+```{r}
+svm_pred3 <- predict(tune_svm2$best.model, newdata=test_svm)
+cor_svm3 <- cor(svm_pred3, test$medv)
+rmse_svm3 <- sqrt(mean((svm_pred3 - test$medv)^2))
+print(paste("cor = ", cor_svm3))
+print(paste("rmse = ", rmse_svm3))
+```
+
