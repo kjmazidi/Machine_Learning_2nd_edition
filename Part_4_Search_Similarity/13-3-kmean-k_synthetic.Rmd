@@ -1,0 +1,145 @@
+---
+title: "Exploring the Number of Clusters"
+author: Karen Mazidi
+output:
+  pdf_document: default
+editor_options: 
+  chunk_output_type: inline
+---
+
+### Create synthetic data
+
+First we create some synthetic data using the rnorm() function. We create 3 distributions with centers (10, 3), (27, 2) and (41, 5). These are the "true" clusters but the regions overlap a little. We plot the unclustered data with different shapes for each distribution.
+
+```{r}
+set.seed(1234)
+x <- rep(0, 60)
+y <- rep(0, 60)
+x[1:20] <- rnorm(20, mean=10, sd=3)
+y[1:20] <- rnorm(20, mean=3, sd=1)
+x[21:40] <- rnorm(20, mean=27, sd=4)
+y[21:40] <- rnorm(20, mean=2, sd=1)
+x[41:60] <- rnorm(20, mean=41, sd=3)
+y[41:60] <- rnorm(20, mean=5, sd=1)
+# uncomment the next two lines to see what happens
+# with a more uniform distribution
+#x <- rnorm(60, mean=30, sd=10)
+#y <- rnorm(60, mean=3, sd=2)
+true <- c(rep(1,20), rep(2,20), rep(3,20))
+plot(x, y, cex=1.5, pch=c(15, 16, 17)[true])
+```
+
+### k-means: one iteration
+
+Apply the k-means algoirthm with only one iteration and one start. 
+
+```{r}
+set.seed(1234)
+df <- data.frame(cbind(x, y))
+res <- kmeans(df, 3, iter.max=1, nstart=1 )
+plot(x, y, col=c("orange", "green", "purple")[res$cluster], cex=1.5, pch=c(15, 16, 17)[true])
+```
+### k-means: unlimited iterations
+
+Although when we ran one iteration we got a warning message that it did not converge, we se no change when we let it run as many iterations as needed. Typing res2$iter at the console shows that it only ran 2 iterations.
+
+```{r}
+set.seed(1234)
+res3 <- kmeans(df, 3,  nstart=1 )
+plot(x, y, col=c("orange", "green", "purple")[res3$cluster], cex=1.5, pch=c(15, 16, 17)[true])
+```
+### Try k=2
+
+```{r}
+set.seed(1234)
+res2 <- kmeans(df, 2,  nstart= 5)
+plot(x, y, col=c("orange", "green", "purple", "blue")[res2$cluster], cex=1.5, pch=c(15, 16, 17)[true])
+```
+
+### Try k=4
+
+```{r}
+set.seed(1234)
+res4 <- kmeans(df, 4,  nstart= 5)
+plot(x, y, col=c("orange", "green", "purple", "blue")[res4$cluster], cex=1.5, pch=c(15, 16, 17)[true])
+```
+### Try 5 clusters
+
+```{r}
+set.seed(1234)
+res5 <- kmeans(df, 5,  nstart= 5)
+plot(x, y, col=c("orange", "green", "purple", "blue", "black")[res5$cluster], cex=1.5, pch=c(15, 16, 17)[true])
+
+```
+
+### withinss
+
+Our goal is to reduce within sum of squares, this means our clusters are more homogenous. Let's compare the withinss for k=2, k=4 and k=5.
+
+It seems there is a dramatic drop from k=2 to k=3 then it gradually decreases. It makes sense that the larger the number of clusters, the smaller the withinss. After all, if k=n then withinss would be 0.
+
+```{r}
+print(paste("k=2: ", sum(res2$withinss)))
+print(paste("k=3: ", sum(res3$withinss)))
+print(paste("k=4: ", sum(res4$withinss)))
+print(paste("k=5: ", sum(res5$withinss)))
+
+```
+
+```{r}
+library(flexclust)
+km2_table <- table(true, res2$cluster)
+print(paste('rand index for k=2', randIndex(km2_table, correct=FALSE)))
+km3_table <- table(true, res3$cluster)
+print(paste('rand index for k=3', randIndex(km3_table, correct=FALSE)))
+km4_table <- table(true, res4$cluster)
+print(paste('rand index for k=4', randIndex(km4_table, correct=FALSE)))
+km5_table <- table(true, res5$cluster)
+print(paste('rand index for k=5', randIndex(km5_table, correct=FALSE)))
+
+```
+
+### Finding k with a function
+
+We can write a function to randomly try different k values and plot the within sum of squares.
+
+```{r}
+plot_withinss <- function(df, max_clusters){
+  withinss <- rep(0, max_clusters-1)
+  for (i in 2:max_clusters){
+    set.seed(1234)
+    withinss[i] <- sum(kmeans(df, i)$withinss)
+  }
+  plot(2:max_clusters, withinss[2:max_clusters], type="o", xlab="K", ylab="Within Sum Squares")
+}
+plot_withinss(df, 9)
+```
+
+
+### NbClust()
+
+Next we try the NbClust() function to find the best number of clusters. 
+
+```{r}
+library(NbClust)
+set.seed(1234)
+nc <- NbClust(df, min.nc=2, max.nc=9, method="kmeans")
+```
+
+```{r}
+t <- table(nc$Best.n[1,])
+t
+```
+
+```{r}
+barplot(t, xlab="Number of Clusters", ylab = "Criteria")
+```
+
+### Plot for the book
+
+```{r}
+par(mfrow=c(2,1))
+plot(x, y, col=c("orange", "green", "purple", "blue")[res3$cluster], cex=1.5, pch=c(15, 16, 17)[true])
+plot(x, y, col=c("orange", "green", "purple", "blue")[res4$cluster], cex=1.5, pch=c(15, 16, 17)[true])
+```
+

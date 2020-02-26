@@ -1,0 +1,90 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+# Clustering
+### Karen Mazidi
+
+
+## Load the wine data
+
+Apply k-means to the wine data set, which contains 13 chemical measurements on 178 Italian red and white wines. 
+
+The column 'type' is a binary factor indicating red or white wine. This variable will not be included in the clustering.
+
+```{r}
+wine <- read.csv('wine_all.csv')
+str(wine)
+```
+### scale the data
+
+Use R's built-in scale() function to scall all columns except the factor 'type'. 
+
+Since we don't have a train/test split in unsupervised learning, just scale the whole data frame.
+
+```{r}
+df <- scale(wine[-13])
+head(df)
+```
+
+### function to plot results for various values of k
+
+Write a function to plot the within-groups sums of squares vs. the number of clusters. This function is modified from Kabacoff, "R in Action", 2nd ed
+
+The plot shows an 'elbow' starting at around k=3. Higher numbers of clusters than 3 give diminishing reductions in sum of squared errors.
+
+```{r}
+wsplot <- function(data, nc=15, seed=1234){
+  wss <- (nrow(data)-1)*sum(apply(data,2,var))
+  for (i in 2:nc){
+    set.seed(seed)
+    wss[i] <- sum(kmeans(data,centers=i)$withinss)
+  }
+  plot(1:nc, wss, type="b", xlab="Number of Clusters",
+       ylab="Within groups sum of squares")
+}
+wsplot(df)
+```
+
+## KMeans
+
+Fit the model using the kmeans() function. We set a seed first so we get reproducible results. 
+
+The total within ss is displayed along with comparison of clusters and wine type.
+
+```{r}
+set.seed(1234)
+fit.km <- kmeans(df, 3, nstart=25)
+print(paste('total withinss = ', fit.km$tot.withinss))
+km_table <- table(wine$type, fit.km$cluster)
+km_table
+```
+
+Compare to k=4.
+
+```{r}
+set.seed(1234)
+fit.km <- kmeans(df, 4, nstart=25)
+print(paste('total withinss = ', fit.km$tot.withinss))
+km4_table <- table(wine$type, fit.km$cluster)
+km4_table
+```
+
+The total within ss for k=4 clusters was lower than for k=3. However, when you compare the tables, the k=3 clustering had 146 observations out of their type compared to 202 for k=4. As you can see in the diagram above, the higher the k the lower the within ss. 
+
+Domain knowledge and application awareness are key to determining a 'best' clustering of the data.
+
+
+We can quantify the agreement between the type and the cluster using a metric called Rand index. The Rand index provides a measure of the agreement between two partitions. The range of the index is from 0 (no agreement) to +1 (perfect agreement). 
+
+The agreement for both clusterings is good but not great. The correct= argument was set to FALSE to not correct for chance. The parameter 'correct=FALSE' prevents adjusting the metric by chance (class distribution). When set to TRUE, the metric is called 'Adjusted Rand Index' and it will generally be lower. Adjusted Rand Index values range from -1 to +1. 
+
+```{r}
+library(flexclust)
+print(paste('rand index for k=3', randIndex(km_table, correct=FALSE)))
+print(paste('rand index for k=4', randIndex(km4_table, correct=FALSE)))
+```
+
+
+

@@ -1,0 +1,85 @@
+---
+title: Hierarchical Clustering
+author: Karen Mazidi
+output:
+  pdf_document: default
+editor_options: 
+  chunk_output_type: inline
+---
+
+### Load the data
+
+This example uses the nutrient data set, which lists values for 5 nutrients (energy, protein, fat, calcium, iron) for 27 different meals. 
+
+```{r}
+library(flexclust)
+data(nutrient)
+```
+
+### Scale the data
+
+Taking a look at the data we see that each column is on its own scale. Clustering will perform better if the data is scaled.
+
+
+```{r}
+head(nutrient)
+nutrient.scaled <- scale(nutrient)
+head(nutrient.scaled)
+```
+
+
+### Distance
+
+Euclidean distances between each of the 27 food types are calculated, using average-linkage. 
+
+The dendogram option hang=-1 causes the labels to be below 0 on the graph. 
+
+The height indicates the criterion value at which clusters are joined. 
+
+```{r}
+d <- dist(nutrient.scaled)
+fit.average <- hclust(d, method="average")
+plot(fit.average, hang=-1, cex=.8, 
+     main="Hierarchical Clustering")
+
+```
+
+### Cut the dendogram
+
+First, we are going to use our domain knowledge to add a column to nutrient indicating what type of food it is. Looking at the dendogram, this will not capture the hierarchy we see in the data but we will use it for illustration purposes. 
+
+```{r}
+library(NbClust)
+nutrient$Type <- "BEEF"
+nutrient$Type[6:7] <- "CHICKEN"
+nutrient$Type[9:10] <- "LAMB"
+nutrient$Type[16:27] <- "SEAFOOD"
+nutrient$Type[11:13] <- "PORK"
+nutrient$Type <- factor(nutrient$Type)
+```
+
+Try cuts from 3 to 11. 
+
+```{r}
+for (c in 3:11){
+  cluster_cut <- cutree(fit.average, c)
+  table_cut <- table(cluster_cut, nutrient$Type)
+  print(table_cut)
+  ri <- randIndex(table_cut)
+  print(paste("cut=", c, "Rand index = ", ri))
+}
+```
+
+We don't get great results in terms of Type but cuts at 5, then 8-10 give the best correspondence with Type.
+
+Let's try calcium from 3 to 16. We chose 16 because there are 16 unique values of calcium. It seems that the cut at 16 had the highest Rand index. However this is overfitting the data so a more reasonable choice might be 9.
+
+```{r}
+for (c in 3:16){
+  cluster_cut <- cutree(fit.average, c)
+  table_cut <- table(cluster_cut, nutrient$calcium)
+  print(table_cut)
+  ri <- randIndex(table_cut)
+  print(paste("cut=", c, "Rand index = ", ri))
+}
+```
