@@ -1,0 +1,65 @@
+---
+title: "Data Exploration with the Titanic Data"
+author: "Karen Mazidi"
+output:
+  pdf_document: default
+---
+
+
+### Load the data
+
+Next we use the read.csv() function to read a csv in a subdirectory called data. Once  you read in the data you will see that it has 1310 observations of 14 variables. We run the str() structure function to get a peek at the data.
+
+```{r}
+df <- read.csv("data/titanic.csv", na.strings="NA", header=TRUE)
+str(df)
+```
+### Data cleaning
+
+The read.csv() function is a bit aggressive about making things factors. Generally if the column contains character data, it tries to make it a factor. Sometimes this makes sense, sometimes it does not. 
+
+We can change a column to a factor with as.factor() or change a column to integer with as.integer() as shown next.
+
+```{r}
+df$survived <- as.factor(df$survived)
+df$pclass <- as.factor(df$pclass)
+df$sex <- factor(df$sex, levels=c("male", "female"))
+```
+
+### Factors
+
+Factors are stored internally as integer vectors but also have a character representation for human readability. We can use contrasts() to find out more about a factor column.
+
+The contrasts for pclass shows that we need 2 variables to encode 3 classes. The base case will be class 1. R will create 2 dummy variables for classes 2 and 3. We will see the importance of these when we get to machine learning.
+
+
+```{r}
+contrasts(df$pclass)
+contrasts(df$sex)
+```
+
+### More exploration
+
+The head() and tail() functions let us look at the first or last few rows. 
+
+```{r}
+head(df)
+tail(df, n=10)
+```
+
+The summary() function can summarize an entire data set or individual columns.
+
+```{r}
+summary(df)
+summary(df$pclass)
+```
+
+The names() function is helpful if you forget the column names.
+
+```{r}
+names(df)
+summary(df$age)
+```
+
+
+That's all for now. We will revisit the Titanic data later when we explore classification algorithms: learning how to predict who survived and who didn't based on demographic data in the file.
