@@ -1,0 +1,61 @@
+---
+title: "Feature Selection"
+author: "Karen Mazidi"
+output:
+  pdf_document: default
+  html_notebook: default
+editor_options:
+  chunk_output_type: inline
+---
+
+### Look for correlations in Pima data
+
+The findCorrelation() function suggests that we could remove column 6, mass, because it correlates with triceps. And that we could remove column 2, glucose, because it correlates with insulin. 
+
+```{r}
+library(caret)
+library(mlbench)
+data("PimaIndiansDiabetes2")
+df <- PimaIndiansDiabetes2[complete.cases(PimaIndiansDiabetes2[]),]
+corMatrix <- cor(df[,1:7])
+findCorrelation(corMatrix, cutoff=0.5, verbose=TRUE)
+```
+### Remove the highly correlated columns
+
+```{r}
+df <- df[,-c(2,6)]
+```
+
+
+### Rank features
+
+The varImp() function ranks variables by importance. It requires a model which we trained on method knn, using control parameters stored in variable ctrl.
+
+```{r}
+ctrl <- trainControl(method="repeatedcv", repeats=5)
+model <- train(diabetes~., data=df, method="knn", preProcess="scale", trControl=ctrl)
+importance <- varImp(model, scale=FALSE)
+importance
+plot(importance)
+```
+### Recursive feature selection
+
+We start with the data set including all columns.
+
+```{r}
+df <- PimaIndiansDiabetes2[complete.cases(PimaIndiansDiabetes2[]),]
+ctrl <- rfeControl(functions=rfFuncs, method="cv", number=10)
+rfe_out <- rfe(df[,1:7], df[,8], sizes=c(1:7), rfeControl=ctrl)
+rfe_out
+```
+
+### FSelector
+
+
+
+```{r}
+library(FSelector)
+var_scores <- random.forest.importance(diabetes~., df)
+var_scores
+```
+
