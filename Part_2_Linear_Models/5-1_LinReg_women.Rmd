@@ -1,5 +1,5 @@
 ---
-title: 'Linear Regression: Women'
+title: 'Linear Regression on the Women Data Set'
 author: "Karen Mazidi"
 output:
   pdf_document: default
@@ -19,7 +19,7 @@ First, load the data, look at its structure and plot the points.
 ```{r}
 data(women)
 str(women)
-plot(women$weight~women$height)
+plot(women$weight~women$height, xlab="height", ylab="weight")
 abline(lm(women$weight~women$height), col="red")
 ```
 
@@ -32,6 +32,11 @@ When we type the model name, R returns basic information about the model.
 ```{r}
 lm1 <- lm(weight~height, data=women)
 lm1
+```
+
+```{r}
+pred <- lm1$fitted.values
+cov(pred, women$weight) / (sd(pred) * sd(women$weight))
 ```
 
 ### The summary() function
