@@ -17,7 +17,7 @@ Let's explore the data with R functions and plots.
 
 ```{r}
 data(ChickWeight)
-str(ChickWeight)
+dim(ChickWeight)
 head(ChickWeight)
 ```
 
@@ -59,6 +59,20 @@ The 4 residual plots are placed in a 2x2 grid.
 par(mfrow=c(2,2))
 plot(lm1)
 ```
+### Evaluate on the test set
+
+```{r}
+pred1 <- predict(lm1, newdata=test)
+cor1 <- cor(pred1, test$weight)
+mse1 <- mean((pred1-test$weight)^2) 
+rmse1 <- sqrt(mse1)
+
+print(paste('correlation:', cor1))
+print(paste('mse:', mse1))
+print(paste('rmse:', rmse1))
+```
+
+
 
 ### Multiple Linear Regression
 
@@ -69,7 +83,7 @@ lm2 <- lm(weight~Time+Diet, data=train)
 summary(lm2)
 ```
 
-The adjusted R-squared for lm2 is 0.7338, which is an improvement of lm1's 0.6863.
+The adjusted R-squared for lm2 is an improvement over lm1.
 
 ### The anova() function
 
@@ -79,53 +93,42 @@ The analysis of variance function here is used to compare the two models. We see
 anova(lm1, lm2)
 ```
 
+### Evaluate on the test set
+
+```{r}
+pred2 <- predict(lm2, newdata=test)
+cor2 <- cor(pred2, test$weight)
+mse2 <- mean((pred2-test$weight)^2) 
+rmse2 <- sqrt(mse2)
+
+print(paste('correlation:', cor2))
+print(paste('mse:', mse2))
+print(paste('rmse:', rmse2))
+```
 
 ### Linear models are not always straight lines
 
 Next we try predicting the log of weight to illustrate that linear models are not always straight lines. This damped down some of the variation in the residuals. The lm3 model had a higher R-squared of 0.8474. We cannot do anova() comparing lm3 because it has a different target, the log(weight) instead of weight.
 
 ```{r}
-lm3 <- lm(log(weight)~Time+Diet, data=ChickWeight)
+lm3 <- lm(log(weight)~Time+Diet, data=train)
 summary(lm3)
 par(mfrow=c(2,2))
 plot(lm3)
 ```
 
-### Predict on test data with model 1
-
-rmse = 30.44
-cor = .87
+### Evaluate on the test set
 
 ```{r}
-pred <- predict(lm1, newdata=test)
-cor(pred, test$weight)
-mse <- mean((pred-test$weight)^2)
-rmse <- sqrt(mse)
-```
-
-### Predict on test data with model 2
-
-cor is slightly better at .887
-rmse is slightly better at 29.00
-
-```{r}
-pred <- predict(lm2, newdata=test)
-cor(pred, test$weight)
-mse2 <- mean((pred-test$weight)^2)
-rmse2 <- sqrt(mse2)
-```
-
-
-### Predict on test data with model 3
-
-correlation is better at .9289
-rmse is significanlty better, at 0.2
-
-```{r}
-pred <- predict(lm3, newdata=test)
-cor(pred, log(test$weight))
-mse3 <- mean((pred-log(test$weight))^2) 
+pred3 <- predict(lm3, newdata=test)
+pred3 <- exp(pred3)
+cor3 <- cor(pred3, test$weight)
+mse3 <- mean((pred3-test$weight)^2) 
 rmse3 <- sqrt(mse3)
+
+print(paste('correlation:', cor3))
+print(paste('mse:', mse3))
+print(paste('rmse:', rmse3))
 ```
 
-Note that we can't do an anova comparison with model 3 because it has a target of log(weight) and lm1 and lm1 have weight as a target.
+Note that we can't do an anova comparison with model 3 because it has a target of log(weight) and lm1 and lm2 have weight as a target.

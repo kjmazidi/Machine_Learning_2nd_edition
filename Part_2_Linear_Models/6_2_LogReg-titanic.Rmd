@@ -2,11 +2,11 @@
 title: "Logistic Regression with the Titanic Data"
 author: "Karen Mazidi"
 output:
-  pdf_document: default
   html_document:
     df_print: paged
+  pdf_document: default
 editor_options:
-  chunk_output_type: console
+  chunk_output_type: inline
 ---
 
 
@@ -16,7 +16,7 @@ There are many versions of the Titanic data. The one used here was downloaded [f
 ### Load the data
 
 ```{r}
-df <- read.csv("data/titanic3.csv", header=TRUE)
+df <- read.csv("data/titanic.csv", header=TRUE)
 str(df)
 ```
 
@@ -28,6 +28,7 @@ First we subset the data frame because we only care about columns pclass, surviv
 df <- df[,c(1,2,4,5)]
 df$pclass <- factor(df$pclass)
 df$survived <- factor(df$survived)
+df$sex <- factor(df$sex)
 head(df)
 ```
 
@@ -43,13 +44,10 @@ sapply(df, function(x) sum(is.na(x)==TRUE))
 ```
 
 
-We see that there are no NAs for sex but one NA each for pclass and survived. We can just delete those rows. There are 264 observations out of the total 1310 where we have NA for the age. We could just delete those but that's a lot of data to lose. Instead we will replace the NAs with the median age. 
+We see that there are no NAs for pclass, survived, or sex. There are 263 observations out of the total 1309 where we have NA for the age. We could just delete those but that's a lot of data to lose. Instead we will replace the NAs with the median age. 
 
 ```{r}
-df <- df[!is.na(df$pclass),]
-df <- df[!is.na(df$survived),]
 df$age[is.na(df$age)] <- median(df$age,na.rm=T)
-
 ```
 
 ### Divide into train and test
@@ -96,7 +94,6 @@ The ROC is a curve that plots the true positive rate (TPR) against the false pos
 library(ROCR)
 p <- predict(glm1, newdata=test, type="response")
 pr <- prediction(p, test$survived)
-# TPR = sensitivity, FPR=specificity
 prf <- performance(pr, measure = "tpr", x.measure = "fpr")
 plot(prf)
 ```

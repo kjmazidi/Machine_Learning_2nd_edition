@@ -2,11 +2,11 @@
 title: "Logistic Regression from Scratch"
 author: "Karen Mazidi"
 output:
-  pdf_document: default
   html_document:
     df_print: paged
+  pdf_document: default
 editor_options:
-  chunk_output_type: console
+  chunk_output_type: inline
 ---
 
 # Notebook for the Logistic Regression Chapter

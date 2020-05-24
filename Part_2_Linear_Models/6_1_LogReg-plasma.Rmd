@@ -2,10 +2,10 @@
 title: "Logistic Regression on the Plasma Data"
 author: "Karen Mazidi"
 output:
-  pdf_document: default
-  html_notebook: default
   html_document:
     df_print: paged
+  html_notebook: default
+  pdf_document: default
 editor_options:
   chunk_output_type: inline
 ---
@@ -31,8 +31,8 @@ The second set of pots are conditional density plots. We can make the same obser
 
 ```{r}
 par(mfrow=c(1,2))
-plot(ESR, fibrinogen, main="Fibrinogen", varwidth=TRUE)
-plot(ESR, globulin, main="Globulin", varwidth=TRUE)
+plot(ESR, fibrinogen, main="Fibrinogen", ylab="", varwidth=TRUE)
+plot(ESR, globulin, main="Globulin", ylab="", varwidth=TRUE)
 
 par(mfrow=c(1,2))
 cdplot(ESR~fibrinogen)
@@ -43,7 +43,7 @@ cdplot(ESR~globulin)
 Even though our data is small, we will go ahead and divide it into train and test sets. 
 
 ```{r}
-set.seed(1234)
+set.seed(3)
 i <- sample(1:nrow(plasma), 0.75*nrow(plasma), replace=FALSE)
 train <- plasma[i,]
 test <- plasma[-i,]
@@ -53,11 +53,22 @@ test <- plasma[-i,]
 
 ### Build a logistic regression model
 
-Our first model uses only fibronogen as a predictor. On our small test data we got about 88% accuracy. The table shows that all test observations were predicted as not ESR>20 and one of the 8 observations actually was ESR>20. Internally, the ESR>20 factor is coded as 1 for not >20 and 2 for ESR>20. This is why we compare them as.integer(). 
+Our first model uses only fibronogen as a predictor. The glm() function is used for logistic regression, with parameter family=binomial
+
+The summary is a little different for logistic regression compared to linear regression:
+* the residual are deviance residuals - measures of deviance contributed from each observation
+* the coefficients represent changes in the log odds of y
+* model metrics
 
 ```{r}
 glm1 <- glm(ESR~fibrinogen, data=train, family=binomial)
 summary(glm1)
+```
+### Evaluate
+
+Our first model uses only fibronogen as a predictor. On our small test data we got about 88% accuracy. The table shows that all test observations were predicted as not ESR>20 and one of the 8 observations actually was ESR>20. Internally, the ESR>20 factor is coded as 1 for not >20 and 2 for ESR>20. This is why we compare them as.integer(). 
+
+```{r}
 probs <- predict(glm1, newdata=test, type="response")
 pred <- ifelse(probs>0.5, 2, 1)
 acc1 <- mean(pred==as.integer(test$ESR))
