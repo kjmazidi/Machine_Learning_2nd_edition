@@ -1,0 +1,145 @@
+---
+title: "kNN Regression"
+output:
+  pdf_document: default
+  html_notebook: default
+  html_document:
+    df_print: paged
+---
+
+This notebook performs kNN regression on the Auto data in package ISLR. The [ISLR book](http://faculty.marshall.usc.edu/gareth-james/ISL/) is a really good and free resource for statistical learning in R. Two of the authors, Hastie and Tibshirani, also have a series of videos available [at this link](https://www.r-bloggers.com/in-depth-introduction-to-machine-learning-in-15-hours-of-expert-videos/)
+
+### Linear Regression baseline
+
+This example uses the Auto data set in package ISLR. First we try linear regression as a baseline and then see if knn can beat the linear model. 
+
+
+```{r}
+library(ISLR)
+attach(Auto)
+Auto$origin <- as.factor(origin)
+str(Auto)
+```
+
+#### Train test split
+
+Also remove the name column.
+
+```{r}
+set.seed(1234)  
+i <- sample(1:nrow(Auto), round(nrow(Auto)*0.8), replace=FALSE)
+train <- Auto[i, -9]
+test <- Auto[-i, -9]
+```
+
+
+Build a linear regression model with all predictors.
+
+```{r}
+lm1 <- lm(mpg ~., data=train)
+summary(lm1)
+```
+
+#### Evaluate
+
+```{r}
+pred1 <- predict(lm1, newdata=test)
+cor_lm1 <- cor(pred1, test$mpg)
+mse_lm1 <- mean((pred1 - test$mpg)^2)
+print(paste("cor=", cor_lm1))
+print(paste("mse=", mse_lm1))
+```
+
+These results aren't bad. Let's see what happens with kNN
+
+### kNN for regression
+
+Notice that origin needs to be an integer. 
+
+```{r, warning=FALSE}
+library(caret)
+train$origin <- as.integer(train$origin)
+test$origin <- as.integer(test$origin)
+
+# fit the model
+fit <- knnreg(train[,2:8],train[,1],k=3)
+
+# evaluate
+pred2 <- predict(fit, test[,2:8])
+cor_knn1 <- cor(pred2, test$mpg)
+mse_knn1 <- mean((pred2 - test$mpg)^2)
+print(paste("cor=", cor_knn1))
+print(paste("mse=", mse_knn1))
+```
+
+The results for kNN weren't quite as good as the linear regression model.
+
+One reason might be that we didn't scale the data. kNN will work better on scaled data.
+
+### Scale the data
+
+Notice we are scaling both train and test on the means and standard deviations of the training set. This is considered a best practice so that information about the test data doesn't leak into the scaling.
+
+```{r}
+train_scaled <- train[, 2:8]  # omit name and don't scale mpg
+means <- sapply(train_scaled, mean)
+stdvs <- sapply(train_scaled, sd)
+train_scaled <- scale(train_scaled, center=means, scale=stdvs)
+test_scaled <- scale(test[, 2:8], center=means, scale=stdvs)
+```
+
+
+### kNN on scaled data
+
+```{r}
+fit <- knnreg(train_scaled, train$mpg, k=3)
+pred3 <- predict(fit, test_scaled)
+cor_knn2 <- cor(pred3, test$mpg)
+mse_knn2 <- mean((pred3 - test$mpg)^2)
+print(paste("cor=", cor_knn2))
+print(paste("mse=", mse_knn2))
+```
+
+Wow. Now kNN has a higher correlation than linear regression and a lower mse. 
+
+### Find the best k
+
+Try various values of k and plot the results.
+
+```{r}
+cor_k <- rep(0, 20)
+mse_k <- rep(0, 20)
+i <- 1
+for (k in seq(1, 39, 2)){
+  fit_k <- knnreg(train_scaled,train$mpg, k=k)
+  pred_k <- predict(fit_k, test_scaled)
+  cor_k[i] <- cor(pred_k, test$mpg)
+  mse_k[i] <- mean((pred_k - test$mpg)^2)
+  print(paste("k=", k, cor_k[i], mse_k[i]))
+  i <- i + 1
+}
+plot(1:20, cor_k, lwd=2, col='red', ylab="", yaxt='n')
+par(new=TRUE)
+plot(1:20, mse_k, lwd=2, col='blue', labels=FALSE, ylab="", yaxt='n')
+```
+
+We can visually see that at k=1 the red correlation is highest and the blue mse is lowest. 
+
+
+```{r}
+which.min(mse_k)
+which.max(cor_k)
+```
+
+### kNN with k=1
+
+The results were better with k=1.
+
+```{r}
+fit <- knnreg(train_scaled, train$mpg, k=1)
+pred4 <- predict(fit, test_scaled)
+cor_knn3 <- cor(pred4, test$mpg)
+mse_knn3 <- mean((pred4 - test$mpg)^2)
+print(paste("cor=", cor_knn3))
+print(paste("mse=", mse_knn3))
+```

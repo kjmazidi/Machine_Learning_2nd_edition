@@ -1,10 +1,12 @@
 ---
+editor_options:
+  chunk_output_type: inline
 output:
   pdf_document: default
-editor_options: 
-  chunk_output_type: console
+  html_document:
+    df_print: paged
 ---
-# kNN Clustering - Regression
+# kNN - Regression
 ## Using 10-fold cross validations
 ### Karen Mazidi
 
@@ -61,7 +63,7 @@ print(paste("range is ", range(test_mse)))
 
 ### Try with various k
 
-We modify the code above to be an anonymouse function called by sapply.  
+We modify the code above to be an anonymous function called by sapply.  
 
 
 ```{r}

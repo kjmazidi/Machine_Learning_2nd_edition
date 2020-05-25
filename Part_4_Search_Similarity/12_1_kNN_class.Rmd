@@ -3,9 +3,9 @@ output:
   pdf_document: default
   html_document: default
 editor_options: 
-  chunk_output_type: console
+  chunk_output_type: inline
 ---
-# kNN Clustering - Classification
+# kNN - Classification
 ### Karen Mazidi
 
 This example shows how to do knn clustering for classification. 
@@ -76,6 +76,7 @@ results <- iris_pred == iris.testLabels
 acc <- length(which(results==TRUE)) / length(results)
 # or combine into one line:
 #acc <- length(which(iris_pred == iris.testLabels)) / length(iris_pred)
+table(results, iris_pred)
 acc
 ```
 
