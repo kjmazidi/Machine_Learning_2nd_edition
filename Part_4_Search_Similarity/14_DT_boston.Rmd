@@ -2,14 +2,14 @@
 title: "Decision Trees for Regression"
 author: "Karen Mazidi"
 output:
-  pdf_document: default
   html_document:
     df_print: paged
+  pdf_document: default
 ---
 
 ### Try linear regression on Boston
 
-We get a correlation of 0.8 and a rmse of 5.36. So, the median home value was off by about $5,360.
+We get a correlation of 0.9 and a rmse of 4.35.
 
 
 ```{r}
@@ -25,21 +25,18 @@ lm1 <- lm(medv~., data=train)
 summary(lm1)
 pred <- predict(lm1, newdata=test)
 cor_lm <- cor(pred, test$medv)
-print(paste("cor = ", cor_lm))
 rmse_lm <- sqrt(mean((pred-test$medv)^2))
-print(paste("rmse = ", rmse_lm))
 ```
 
 ### Using tree
 
-Correlation was 0.88 and rmse was 4.19. The tree performed better than the linear regression model. 
+Correlation was 0.8433 and rmse was 5.14.
 
 ```{r}
 tree1 <- tree(medv~., data=train)
 summary(tree1)
 pred <- predict(tree1, newdata=test)
-cor_tree <- cor(pred, test$medv)
-print(paste('correlation:', cor_tree))
+print(paste('correlation:', cor(pred, test$medv)))
 rmse_tree <- sqrt(mean((pred-test$medv)^2))
 print(paste('rmse:', rmse_tree))
 plot(tree1)
@@ -49,18 +46,12 @@ text(tree1, cex=0.5, pretty=0)
 
 ### cross validation
 
-The plot shows the deviance for various tree sizes. The full tree with 11 terminal (leaf) nodes has the smallest deviance, but it might overfit the data. At the other extreme, a tree with one node has the highest deviance. A happy medium is somewhere in the bend of the curve. 
-
-
-
 ```{r}
 cv_tree <- cv.tree(tree1)
 plot(cv_tree$size, cv_tree$dev, type='b')
 ```
 
 ### prune the tree
-
-The tree is pruned to 5 terminal nodes, and then plotted.
 
 
 ```{r}
@@ -72,15 +63,15 @@ text(tree_pruned, pretty=0)
 
 ### test on the pruned tree
 
-The correlation and rmse are not as good as the unpruned tree but still slightly better than the linear regression model. In this case pruning did not improve results on the test data but the tree is simpler and easier to interpret.
+The cor is now 0.845, very slightly above the unpruned tree but still lower than linear regression. The rmse is 5.18, very similar to the unpruned tree but higher than linear regression.
+
+In this case pruning did not improve results on the test data but the tree is simpler and easier to interpret.
 
 
 ```{r}
 pred_pruned <- predict(tree_pruned, newdata=test)
 cor_pruned <- cor(pred_pruned, test$medv)
-rmse_pruned <- sqrt(mean((pred_pruned-test$medv)^2))
-print(paste("cor of pruned tree = ", cor_pruned))
-print(paste("rmse of pruned tree = ", rmse_pruned))
+rmse_pruned <- rmse_pruned <- sqrt(mean((pred_pruned-test$medv)^2))
 ```
 
 ### Random Forest
@@ -97,7 +88,7 @@ rf
 
 ### predict on the random forest
 
-The random forest model got improved results over any of the previous models in this notebook.
+Now the correlation is much higher than even linear regression and the rmse is almost half.
 
 ```{r}
 pred_rf <- predict(rf, newdata=test)
@@ -124,9 +115,6 @@ Our results for bagging were slightly lower than for the random forest.
 ```{r}
 pred_bag <- predict(bag, newdata=test)
 cor_bag <- cor(pred_bag, test$medv)
-print(paste('corr:', cor_bag))
 rmse_bag <- sqrt(mean((pred_bag-test$medv)^2))
-print(paste('rmse:', rmse_bag))
-
 ```
 

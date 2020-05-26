@@ -1,9 +1,11 @@
 ---
 title: "Exploring the Number of Clusters"
-author: Karen Mazidi
+author: "Karen Mazidi"
 output:
+  html_document:
+    df_print: paged
   pdf_document: default
-editor_options: 
+editor_options:
   chunk_output_type: inline
 ---
 
@@ -71,12 +73,11 @@ res5 <- kmeans(df, 5,  nstart= 5)
 plot(x, y, col=c("orange", "green", "purple", "blue", "black")[res5$cluster], cex=1.5, pch=c(15, 16, 17)[true])
 
 ```
-
 ### withinss
 
 Our goal is to reduce within sum of squares, this means our clusters are more homogenous. Let's compare the withinss for k=2, k=4 and k=5.
 
-It seems there is a dramatic drop from k=2 to k=3 then it gradually decreases. It makes sense that the larger the number of clusters, the smaller the withinss. After all, if k=n then withinss would be 0.
+It seems there is a dramatic drop from k=2 to k=3 then it gradually decreases. It makes sense that the larger the number of clusters, the smaller the withinss. After all, if k=n then withnss would be 0.
 
 ```{r}
 print(paste("k=2: ", sum(res2$withinss)))
@@ -86,18 +87,6 @@ print(paste("k=5: ", sum(res5$withinss)))
 
 ```
 
-```{r}
-library(flexclust)
-km2_table <- table(true, res2$cluster)
-print(paste('rand index for k=2', randIndex(km2_table, correct=FALSE)))
-km3_table <- table(true, res3$cluster)
-print(paste('rand index for k=3', randIndex(km3_table, correct=FALSE)))
-km4_table <- table(true, res4$cluster)
-print(paste('rand index for k=4', randIndex(km4_table, correct=FALSE)))
-km5_table <- table(true, res5$cluster)
-print(paste('rand index for k=5', randIndex(km5_table, correct=FALSE)))
-
-```
 
 ### Finding k with a function
 

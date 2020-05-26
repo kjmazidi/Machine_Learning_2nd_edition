@@ -2,9 +2,9 @@
 title: "Decision Tree with the Iris Data"
 author: "Karen Mazidi"
 output:
-  pdf_document: default
   html_document:
     df_print: paged
+  pdf_document: default
   'pdf_document:': default
 editor_options:
   chunk_output_type: inline
@@ -12,54 +12,28 @@ editor_options:
 
 ### Using rpart
 
-The **rpart** package is a popular package for making decision trees. The code below builds a tree on the iris data set.
-
-The variable **tree_iris** contains the tree. When output, the indents show the tree branches. On each split the information given is the node, the variable/value of the split, the number of observations, the loss (in number of observations), the class, and the probabilities for each class in parenthesis.
 
 ```{r}
 library(rpart)
 tree_iris <- rpart(Species~., data=iris, method="class")
 tree_iris
+summary(tree_iris)
+plot(tree_iris, uniform=TRUE)
+text(tree_iris, use.n=TRUE, all=TRUE, cex=.6)
 ```
-
-The rpart tree can be plotted as follows.
-
-```{r}
-plot(tree_iris, uniform=TRUE,margin=0.2)
-text(tree_iris)
-```
-
 
 ### Using tree
-
-The tree() package is also popular for decision trees. Notice that it made more splits than rpart. Both packages have many parameters to adjust to give different results. The tree display is similar to the display of rpart, but it gives a deviance metric instead of loss.
 
 ```{r}
 library(tree)
 tree_iris2 <- tree(Species~., data=iris)
 tree_iris2
-
-```
-The summary() function gives an overview of the model, its deviance, and error rate. 
-
-```{r}
 summary(tree_iris2)
-
-```
-
-The plot is shown below. The tree starts out the same as the rpart tree, but makes additional splits. 
-
-Notice that some leaves have the same class. For example, at the bottom right, both leaf nodes are of class virginica. The split was made because one class may be more pure than the other. 
-
-```{r}
 plot(tree_iris2)
-text(tree_iris2, cex=0.75, pretty=0)
+text(tree_iris2, cex=0.5, pretty=0)
 ```
-
 
 ### train and test
-
-The following makes another tree using only training data, and evaluates on test data. The accuracy was 94%. 
 
 ```{r}
 

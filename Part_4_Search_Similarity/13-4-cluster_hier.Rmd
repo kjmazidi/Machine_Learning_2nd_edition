@@ -1,9 +1,11 @@
 ---
-title: Hierarchical Clustering
-author: Karen Mazidi
+title: "Hierarchical Clustering"
+author: "Karen Mazidi"
 output:
+  html_document:
+    df_print: paged
   pdf_document: default
-editor_options: 
+editor_options:
   chunk_output_type: inline
 ---
 
@@ -14,6 +16,7 @@ This example uses the nutrient data set, which lists values for 5 nutrients (ene
 ```{r}
 library(flexclust)
 data(nutrient)
+str(nutrient)
 ```
 
 ### Scale the data
