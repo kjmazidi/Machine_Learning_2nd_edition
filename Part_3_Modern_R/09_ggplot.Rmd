@@ -1,0 +1,128 @@
+---
+title: "Introduction to ggplot2"
+author: "Karen Mazidi"
+output:
+  pdf_document: default
+  html_notebook: default
+  html_document:
+    df_print: paged
+editor_options:
+  chunk_output_type: console
+---
+
+There are 7 grammatical elements in ggplot2, the first 3 of these are essential to getting something plotted:
+
+
+* data - the data being plotted should be the first argument, or specify data=...
+* aesthetics - the scales onto which we plot; use aes() to specify at least x= and y= if needed as well as other parameters for customization
+* geometries - visual elements such as points, lines, etc.
+* facets - for plotting multiples
+* statistics - representations to aid understanding
+* coordinates - space on which data will be plotted
+* themes - you can customize your own theme to use over and over
+
+### load tidyverse and some data
+
+Loading the diabetes data set from package mlbench.
+
+```{r, message=FALSE}
+library(tidyverse)
+library(mlbench)
+data("PimaIndiansDiabetes2")
+
+tb <- tbl_df(PimaIndiansDiabetes2)
+```
+
+
+## Explore ggplot2
+
+Hadley Wickham developed ggplot2 in 2005, inspired by a grammar of graphics developed by Leland Wildinson in 1999. The ggplot2 functions are much more powerful than standard R graphs but also slower. 
+
+We have a short example below showing important components of building a ggplot. First we specify the data, then the aesthetics which are how the data is represented, followed by the geometry and finally labels.
+
+```{r, message=FALSE}
+ggplot(tb, aes(x=mass, y=glucose)) +
+  geom_point() +
+  labs(title="Glucose and BMI", x="BMI", y="Glucose")
+```
+Next we add some color and a smoothing line which helps us see a trend in the data. By default the smoothing line to highlight the trend in the data
+
+```{r}
+ggplot(tb, aes(x=mass, y=glucose)) +
+  geom_point(pch=20, color='blue', size=1.5) +
+  geom_smooth(method='lm', color='red', linetype=2) +
+  labs(title="Glucose and BMI", x="BMI", y="Glucose")
+```
+
+### informative graph
+
+
+```{r}
+ggplot(tb, 
+  aes(x=tb$mass, y=tb$age, shape=diabetes, col=pregnant)) +
+  geom_point(size=2) +
+  labs(x="BMI",    y="Age")
+```
+
+
+
+### facet_grid
+
+* filter out rows with NAs in glucose or insulin
+* create 2 new factor columns, glucose_high and insulin_high
+* plot
+
+The facet grid for 2 binary variables has 4 windows for all combinations. 
+
+```{r}
+tb <- filter(tb, !is.na(glucose), !is.na(insulin))
+
+tb <- mutate(tb, glucose_high = factor(ifelse(tb$glucose>mean(tb$glucose), 1, 0)))
+tb <- mutate(tb, insulin_high = factor(ifelse(tb$insulin>mean(tb$insulin), 1, 0)))
+
+ggplot(tb, 
+  aes(x=mass, y=age, shape=diabetes, col=pregnant)) +
+  geom_point(size=2) +
+ facet_grid(glucose_high~insulin_high)       
+```
+
+
+### histogram
+
+```{r}
+ggplot(tb, aes(x=mass)) +
+  geom_histogram(fill="cornsilk4")
+```
+
+### boxplot and rug
+
+```{r}
+ggplot(tb, aes(x=diabetes, y=mass)) +
+  geom_boxplot(notch=TRUE) +
+  geom_point(position="jitter", color="cornflowerblue", alpha=.5) +
+  geom_rug(color="cornflowerblue")
+```
+
+### density plot
+
+```{r}
+ggplot(tb, aes(x=mass, fill=diabetes)) +
+  geom_density(alpha=0.5)
+```
+### bubble chart
+
+```{r}
+ggplot(tb, 
+       aes(x=mass, y=glucose, size=pregnant)) +
+  geom_point(shape=21, fill="cornflowerblue")
+```
+
+### grid
+
+```{r}
+library(gridExtra)
+p1 <- ggplot(tb, aes(x=insulin_high)) + geom_bar(fill="cornflowerblue") 
+p2 <- ggplot(tb, aes(x=glucose_high)) + geom_bar(fill="cornflowerblue")
+grid.arrange(p1, p2, ncol=2)
+```
+

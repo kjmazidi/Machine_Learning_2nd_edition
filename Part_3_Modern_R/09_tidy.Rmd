@@ -1,0 +1,129 @@
+---
+title: "Tidyverse Demo"
+output:
+  html_document:
+    df_print: paged
+  html_notebook: default
+  pdf_document: default
+---
+
+Demonstrating tidyverse packages and functions.
+
+Install the tidyverse like this:
+```
+install.packages("tidyverse")
+```
+
+An associated book is [R for Data Science](https://r4ds.had.co.nz/)
+
+### Create a tibble
+
+```{r}
+# use a mlbench data frame
+library(mlbench)
+data("PimaIndiansDiabetes2")
+
+library(tidyverse)
+tb <- tbl_df(PimaIndiansDiabetes2)
+tb
+
+# remove the data frame to free up memory
+rm(PimaIndiansDiabetes2)
+```
+
+A glimpse is a view similar to str.
+
+```{r}
+glimpse(tb)
+```
+
+### The dplyr package
+
+Some dply functions work on columns. These are demonstrated below.
+
+#### select()
+
+Select a subset of columns. The select() function returns a tibble but it was not saved and will be discarded after the glimpse is output.
+
+```{r}
+select(tb, diabetes, pregnant) %>%
+  glimpse
+```
+
+or:
+
+```{r}
+tb %>%
+  select(diabetes, pregnant) %>%
+  glimpse
+```
+
+#### mutate()
+
+The mutate() function can create new columns from old ones.
+
+```{r}
+tb <- tb %>%
+       mutate(glucose_high = factor(
+         ifelse(glucose>mean(glucose, na.rm=TRUE), 1, 0)))
+
+tb[1:5, c(2, 10)]
+```
+
+We can also use mutate to delete a column by setting it to NULL.
+
+```{r}
+tb <- tb %>%
+  mutate(glucose_high = NULL)
+
+names(tb)
+```
+
+#### rename()
+
+Rename a column.
+
+```{r}
+tb <- rename(tb, blood_pressure = pressure)
+```
+
+#### filter()
+
+The filter function can select rows.
+
+```{r}
+tb <- filter(tb, !is.na(glucose), !is.na(mass))
+glimpse(tb)
+```
+#### arrange()
+
+The following code arranges the rows by mass in descending order.
+
+```{r}
+arrange(tb, desc(mass))
+```
+
+### summarize
+
+The summarize function computes statistical summaries of the data.
+
+```{r}
+tb %>%
+  summarize(min=min(mass), max=max(mass), sd=sd(mass))
+```
+
+Another example:
+
+```{r}
+tb %>%
+  summarize(num_diabetic = sum(diabetes=="pos"), num_healthy = sum(diabetes=="neg"))
+```
+
+### group_by
+
+```{r}
+tb %>%
+  group_by(diabetes) %>%
+  summarize(median_BMI = median(mass, na.rm=TRUE))
+```
+
