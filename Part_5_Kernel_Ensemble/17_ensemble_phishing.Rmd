@@ -1,0 +1,154 @@
+---
+title: "Ensemble Methods"
+author: "Karen Mazidi"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+Using a phishing data set with binary target type: +1 or -1. Convert from Weka format to a data frame. 
+
+```{r}
+library(RWeka)
+df <- read.arff("phishing/Training Dataset.arff")
+str(df)
+```
+
+
+### Train Test Split
+
+
+```{r}
+set.seed(1234)
+i <- sample(nrow(df), .75*nrow(df), replace=FALSE)
+train <- df[i,]
+test <- df[-i,]
+```
+
+
+### Logistic regression on all predictors
+
+
+```{r}
+library(mltools)
+glm1 <- glm(Result~., data=train, family=binomial)
+probs <- predict(glm1, newdata=test, type="response")
+pred <- ifelse(probs>0.5, 2, 1)
+acc_logreg <- mean(pred==as.integer(test$Result))
+mcc_logreg <- mcc(pred, as.integer(test$Result))
+print(paste("accuracy=", acc_logreg))
+print(paste("mcc=", mcc_logreg))
+```
+
+
+### Random Forest 
+
+```{r}
+library(randomForest)
+set.seed(1234)
+rf <- randomForest(Result~., data=train, importance=TRUE)
+rf
+```
+
+
+```{r}
+pred <- predict(rf, newdata=test, type="response")
+acc_rf <- mean(pred==test$Result)
+mcc_rf <- mcc(factor(pred), test$Result)
+print(paste("accuracy=", acc_rf))
+print(paste("mcc=", mcc_rf))
+```
+
+
+### boosting from adabag library
+
+```{r}
+library(adabag)
+adab1 <- boosting(Result~., data=train, boos=TRUE, mfinal=20, coeflearn='Breiman')
+summary(adab1)
+```
+
+
+```{r}
+pred <- predict(adab1, newdata=test, type="response")
+acc_adabag <- mean(pred$class==test$Result)
+mcc_adabag <- mcc(factor(pred$class), test$Result)
+print(paste("accuracy=", acc_adabag))
+print(paste("mcc=", mcc_adabag))
+```
+
+
+### fastAdaboost
+
+```{r}
+library(fastAdaboost)
+set.seed(1234)
+fadab <- adaboost(Result~., train, 10)
+summary(fadab)
+```
+
+```{r}
+pred <- predict(fadab, newdata=test, type="response")
+# pred$class holds the classification
+acc_fadab <- mean(pred$class==test$Result)
+mcc_fadab <- mcc(pred$class, test$Result)
+print(paste("accuracy=", acc_fadab))
+print(paste("mcc=", mcc_fadab))
+```
+
+### XGBoost
+
+```{r}
+library(xgboost)
+train_label <- ifelse(train$Result==1, 1, 0)
+train_matrix <- data.matrix(train[, -31])
+model <- xgboost(data=train_matrix, label=train_label,
+                 nrounds=100, objective='binary:logistic')
+```
+
+```{r}
+test_label <- ifelse(test$Result==1, 1, 0)
+test_matrix <- data.matrix(test[, -31])
+
+probs <- predict(model, test_matrix)
+pred <- ifelse(probs>0.5, 1, 0)
+
+acc_xg <- mean(pred==test_label)
+mcc_xg <- mcc(pred, test_label)
+print(paste("accuracy=", acc_xg))
+print(paste("mcc=", mcc_xg))
+```
+
+### SuperLearner
+
+Had to install packages: ranger kernlab 
+
+Super is not super. Can get better results with a lot of parameter tuning, but why? There are better methods.
+
+```{r}
+library(SuperLearner)
+
+set.seed(1234)
+model <- SuperLearner(train_label,
+                      train[, -31],
+                      family=binomial(),
+                      SL.library=list("SL.ranger",
+                                      "SL.ksvm",
+                                      "SL.ipredbagg"))
+
+model
+```
+
+
+```{r}
+probs <- predict.SuperLearner(model, newdata=test[,-31])
+pred <- ifelse(probs$pred>0, 1, 0)
+acc_sl <- mean(pred==test_label)
+mcc_sl <- mcc(as.integer(pred), as.integer(test_label))
+print(paste("accuracy=", acc_sl))
+print(paste("mcc=", mcc_sl))
+```
+
+
+
