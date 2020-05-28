@@ -1,0 +1,108 @@
+---
+title: "SVM Regression"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+editor_options:
+  chunk_output_type: console
+---
+
+Load packages and data.
+
+```{r}
+library(e1071)
+library(MASS)
+df <- Boston[]
+```
+
+### Divide into train, test, validate
+
+```{r}
+set.seed(1234)
+spec <- c(train=.6, test=.2, validate=.2)
+i <- sample(cut(1:nrow(df),
+                nrow(df)*cumsum(c(0,spec)), labels=names(spec)))
+train <- df[i=="train",]
+test <- df[i=="test",]
+vald <- df[i=="validate",]
+```
+
+### Try linear regression
+
+```{r}
+lm1 <- lm(medv~., data=train)
+pred <- predict(lm1, newdata=test)
+cor_lm1 <- cor(pred, test$medv)
+mse_lm1 <- mean((pred-test$medv)^2)
+```
+
+
+
+### Try a linear kernel
+
+```{r}
+svm1 <- svm(medv~., data=train, kernel="linear", cost=10, scale=TRUE)
+summary(svm1)
+pred <- predict(svm1, newdata=test)
+cor_svm1 <- cor(pred, test$medv)
+mse_svm1 <- mean((pred - test$medv)^2)
+```
+
+### Tune
+
+```{r}
+tune_svm1 <- tune(svm, medv~., data=vald, kernel="linear",
+                  ranges=list(cost=c(0.001, 0.01, 0.1, 1, 5, 10, 100)))
+summary(tune_svm1)
+```
+
+### Evaluate on best linear svm
+
+Since our validation set is small, only about 100 observations, we probably did not get hyperparameters that generalize to the full data set.
+
+```{r}
+pred <- predict(tune_svm1$best.model, newdata=test)
+cor_svm1_tune <- cor(pred, test$medv)
+mse_svm1_tune <- mean((pred - test$medv)^2)
+```
+
+### Try a polynomial kernel
+
+```{r}
+svm2 <- svm(medv~., data=train, kernel="polynomial", cost=10, scale=TRUE)
+summary(svm2)
+pred <- predict(svm2, newdata=test)
+cor_svm2 <- cor(pred, test$medv)
+mse_svm2 <- mean((pred - test$medv)^2)
+```
+
+### Try a radial kernel
+
+
+```{r}
+svm3 <- svm(medv~., data=train, kernel="radial", cost=10, gamma=1, scale=TRUE)
+summary(svm3)
+pred <- predict(svm3, newdata=test)
+cor_svm3 <- cor(pred, test$medv)
+mse_svm3 <- mean((pred - test$medv)^2)
+```
+
+### Tune hyperperameters
+
+```{r}
+set.seed(1234)
+tune.out <- tune(svm, medv~., data=vald, kernel="radial",
+                 ranges=list(cost=c(0.1,1,10,100,1000),
+                             gamma=c(0.5,1,2,3,4)))
+summary(tune.out)
+svm4 <- svm(medv~., data=train, kernel="radial", cost=100, gamma=0.5, scale=TRUE)
+summary(svm4)
+pred <- predict(svm4, newdata=test)
+cor_svm4 <- cor(pred, test$medv)
+mse_svm4 <- mean((pred - test$medv)^2)
+```
+
+
+
+
