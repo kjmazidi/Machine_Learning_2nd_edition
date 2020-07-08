@@ -4,6 +4,8 @@ author: "Karen Mazidi"
 output:
   pdf_document: default
   html_document: default
+editor_options: 
+  chunk_output_type: console
 ---
 
 # Exploring R Control Structures with the PimaIndiansDiabetes2 data

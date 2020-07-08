@@ -3,6 +3,10 @@ title: "Data Exploration with the Boston Housing Data"
 author: "Karen Mazidi"
 output:
   pdf_document: default
+  html_document:
+    df_print: paged
+editor_options:
+  chunk_output_type: inline
 ---
 
 
@@ -12,7 +16,7 @@ output:
 if (!require("MASS")){
   install.packages("MASS")
 }
-library(MASS)
+#library(MASS)  # not needed with above code
 ```
 ### Load Boston
 
