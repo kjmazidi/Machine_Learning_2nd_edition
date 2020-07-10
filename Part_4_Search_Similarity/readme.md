@@ -14,4 +14,3 @@ These notebooks/pdfs accompany Chapter 12: Instance-Based Learning with kNN, Cha
 * 14_DT_iris - classification decision tree on the iris data
 * 14_DT_boston - regression decision tree on the Boston housing data, also demonstrating cross-validation pruning, random forests, and bagging
 
-* 15 PCA Principal Components Analysis and LDA Linear Discriminant Analysis
