@@ -98,6 +98,7 @@ cor_knn2 <- cor(pred3, test$mpg)
 mse_knn2 <- mean((pred3 - test$mpg)^2)
 print(paste("cor=", cor_knn2))
 print(paste("mse=", mse_knn2))
+print(paste("rmse=", sqrt(mse_knn2)))
 ```
 
 Wow. Now kNN has a higher correlation than linear regression and a lower mse. 
