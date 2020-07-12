@@ -36,18 +36,24 @@ Part Five: Kernel Methods and Ensemble Methods
 
 16. Support Vector Machines
 17. Ensemble Methods
-18. Semi-supervised Learning
-19. The Craft 5: Choosing Algorithms
+18. The Craft 5: Choosing Algorithms
 
-Part Six: Neural Networks
+Part Six: Python for Machine Learning
 
-20. Neural Networks
-21. Deep Learning with Keras
-22. The Craft 6: Big(ish) Data
+19. Python Basics
+20. Python Libraries for Machine Learning
+21. Python Machine Learning Examples
 
-Part Seven: Modeling the World
+Part Seven: Neural Networks
 
-23. Bayes Nets
-24. Markov Models
-25. Reinforcement Learning
-26. The Craft 7: Learning Theory
+22. Neural Networks
+23. Deep Learning with Keras
+22. The Craft 6: Machine Learning Trends
+
+Part Eight: Modeling the World
+
+25. Bayes Nets
+26. Markov Models
+27. Reinforcement Learning
+28. The Craft 8: Learning Theory
+
