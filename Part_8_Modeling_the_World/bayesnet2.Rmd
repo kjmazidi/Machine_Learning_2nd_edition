@@ -1,3 +1,8 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
 # Bayesian Network Learning
 ## On the Default and Titanic data sets
 ### Karen Mazidi
@@ -51,14 +56,13 @@ Now let's try a subset of the Titanic data set. We had to a little data fiddling
 
 
 ```{r}
-df <- read.csv('data/train.csv', header=T, na.strings=c(""))
-df <- df[,c(2,3,5,6)]  # Survived, Pclass, Sex, Age
-bn_titan <- na.omit(df)
+df <- read.csv('train.csv', header=T, na.strings=c(""))
+df <- df[1:750, c(2,3,5,6)]  # Survived, Pclass, Sex, Age
+bn_titan <- df[complete.cases(df), ]
 bn_titan$Survived <- as.factor(bn_titan$Survived)
 bn_titan$Pclass <- as.factor(bn_titan$Pclass)
+bn_titan$Sex <- as.factor(bn_titan$Sex)
 str(bn_titan)
-
-
 ```
 
 
