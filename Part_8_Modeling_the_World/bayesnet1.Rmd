@@ -1,0 +1,97 @@
+# Bayesian Network Learning
+## On the Default and Titanic data sets
+### Karen Mazidi
+
+### Default data set
+
+Let's try bnlearn on some familiar data sets. First, the Default data set from ISLR. 
+
+```{r}
+library(bnlearn)
+library(ISLR)
+data("Default")
+```
+
+### Build the model
+
+Use the hill-climbing algorithm to create the model, then display it. 
+
+The model seems to fit what we learned by doing ML on this data set before. Income is not a good predictor for default, notice there is no link between them.
+
+
+```{r}
+bn_df <- data.frame(Default)
+str(bn_df)
+res <- hc(bn_df)
+plot(res)
+```
+
+
+### Probabilities
+
+This is a really unbalanced data set!
+
+```{r}
+fittedbn <- bn.fit(res, data=bn_df)
+print(fittedbn$default)
+```
+
+
+### Try some predictions
+
+```{r}
+cpquery(fittedbn, event=(default=="Yes"), evidence = (student=="Yes"))
+cpquery(fittedbn, event=(default=="Yes"), evidence = (balance>1200))
+cpquery(fittedbn, event=(default=="Yes"), evidence = (student=="Yes" & balance>1200))
+```
+
+### Titanic
+
+Now let's try a subset of the Titanic data set. We had to a little data fiddling because the bnlearn didn't like NAs and ints. 
+
+
+```{r}
+df <- read.csv('train.csv', header=T, na.strings=c(""))
+df <- df[1:890, c(2,3,5,6)]  # Survived, Pclass, Sex, Age
+bn_titan <- df[complete.cases(df), ]
+bn_titan$Survived <- as.factor(bn_titan$Survived)
+bn_titan$Pclass <- as.factor(bn_titan$Pclass)
+bn_titan$Sex <- as.factor(bn_titan$Sex)
+str(bn_titan)
+```
+
+
+### Build the net
+
+This model is not surprising. Age and Sex and Pclass were found to be good predictors in previous experiments.
+
+```{r}
+res_titan <- hc(bn_titan)
+plot(res_titan)
+```
+
+### Print the probabilities
+
+This breaks down the probabilities nicely.
+
+
+```{r}
+fitted_bn_titan <- bn.fit(res_titan, data=bn_titan)
+print(fitted_bn_titan)
+```
+
+
+### Predict
+
+Try some predictions based on the net
+
+```{r}
+cpquery(fitted_bn_titan, event = (Survived==1), evidence = (Pclass==1))
+cpquery(fitted_bn_titan, event = (Survived==1), evidence = (Age<9) )
+cpquery(fitted_bn_titan, event = (Survived==1), evidence = (Pclass==1 & Age<=9) )
+cpquery(fitted_bn_titan, event = (Survived==1), evidence = (Pclass==1 & Age>9) )
+cpquery(fitted_bn_titan, event = (Survived==1), evidence = (Sex=="female") )
+cpquery(fitted_bn_titan, event = (Survived==1), evidence = (Sex=="male" & Age>21) )
+```
+
+
