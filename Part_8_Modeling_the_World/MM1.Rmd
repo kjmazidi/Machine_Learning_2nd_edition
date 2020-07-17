@@ -1,0 +1,44 @@
+---
+title: "Modeling with a Markov Model"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+A Markov model of a person's tendency to exercise or not. A Markov process has:
+
+* a finite set of states
+* fixed transition probabilities between states
+
+Initial state: 30 days: 25 exercised (E), 5 did not (N)
+
+Transition probabilities: 
+
+* E -> E .8
+* E -> N .2
+* N -> N .75
+* N -> E .25
+
+```{r}
+# build the transition matrix for the model
+transMatrix <- matrix(c(.8, .2, .25, .75), nrow=2)
+transMatrix
+# represent the initial state in the exercise matrix
+exercise <- matrix(c(5/30, 25/30), nrow=2)
+exercise
+```
+
+Alter the number of iterations.
+
+After 6 iterations, the model stabilizes at around 54% to 46%. After 5000 iterations, about the same. 
+
+```{r}
+for (i in 1:10){
+  exercise <- transMatrix %*% exercise
+  print(paste("exercise at i=", i, ":", format(round(exercise[1,], 2))))
+}
+exercise
+```
+
+
