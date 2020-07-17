@@ -1,0 +1,68 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+# Reinforcement Learning
+## MDP (markov decision process)
+
+
+Adapted from: http://www7.inra.fr/mia/T/MDPtoolbox/QuickStart.pdf
+
+
+```{r}
+library(MDPtoolbox)
+
+```
+
+
+```{r}
+x <- mdp_example_forest()
+mdp_check(x$P, x$R)
+discount <- 0.95
+```
+
+
+```{r}
+y <- mdp_policy_iteration(x$P, x$R, discount)
+V <- y$V
+policy <- y$policy
+```
+
+
+```{r}
+z <- mdp_LP(x$P, x$R, discount)
+V <- z$V
+policy <- z$policy
+```
+
+
+```{r}
+Vpolicy <- mdp_eval_policy_matrix(x$P, x$R, discount, policy)
+Vpolicy
+Vpolicy <- mdp_eval_policy_iterative(x$P, x$R, discount, policy)
+Vpolicy
+Vpolicy <- mdp_eval_policy_TD_0(x$P, x$R, discount, policy)
+Vpolicy
+```
+
+Model parameter change
+
+change...
+
+didn't finish:  http://www7.inra.fr/mia/T/MDPtoolbox/QuickStart.pdf
+
+
+
+```{r}
+q <- mdp_example_forest(3, 0.4, 2, .2)
+# didn't finish w <- mdp_
+```
+
+wildfire high
+
+```{r}
+
+```
+
+

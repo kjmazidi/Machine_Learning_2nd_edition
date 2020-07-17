@@ -1,0 +1,51 @@
+---
+title: "Hidden Markov Model"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+editor_options:
+  chunk_output_type: console
+---
+
+Modified from: https://www.r-bloggers.com/hmm-example-with-depmixs4/
+
+
+```{r}
+library(depmixS4)
+
+# generate our data
+n <- 140 # number of transitions (7 days, 10 weeks)
+obs <- rep(c(c(2, 2), c(2, 1), c(1, 1), c(1, 1), c(1, 1), c(1, 1), c(1, 2)), 10)
+```
+
+
+
+
+
+```{r}
+set.seed(1234)
+# 1. create the model
+mod <- depmix(response = obs ~ 1, data=data.frame(obs), nstates=2)
+
+# 2. fit the model 
+f <- fit(mod)
+summary(f)
+
+# get the estimated state for each timestep 
+estimates <- posterior(f)
+
+par(mfrow=c(2,1))
+plot(1:n, obs, type='l', main='Observations, X')
+plot(1:n, estimates[,2], type='l', main='Estimates')
+
+```
+
+What did it learn?
+
+```{r}
+head(estimates)
+```
+
+
+
