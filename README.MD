@@ -2,7 +2,7 @@
 ## author: Dr. Karen Mazidi
 
 Materials to accompany the book, still in progress. 
-Videos available on [YouTube]9https://www.youtube.com/playlist?list=PLfe6IcA_dEWkcHFfBA6XSXW31H8t4XSbB)
+Videos available on [YouTube](https://www.youtube.com/playlist?list=PLfe6IcA_dEWkcHFfBA6XSXW31H8t4XSbB)
 
 Table of Contents
 
