@@ -1,7 +1,6 @@
 # Machine Learning Handbook Using R and Python
 ## author: Dr. Karen Mazidi
 
-Chapters are available on [my blog](http://karenmazidi.blogspot.com/)
 
 Videos available on [my YouTube channel](https://www.youtube.com/playlist?list=PLfe6IcA_dEWkcHFfBA6XSXW31H8t4XSbB)
 
