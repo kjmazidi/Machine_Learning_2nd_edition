@@ -2,7 +2,7 @@
 
 * R has many built-in data sets, and packages add even more. A list of data sets in csv and other formats is available from [this repo](https://vincentarelbundock.github.io/Rdatasets/datasets.html)
 
-###Other resources:
+### Other resources:
 
 * [The UCI Machine Learning Repository](https://archive.ics.uci.edu/ml/index.php)
 * [Kaggle](https://www.kaggle.com/)
@@ -13,7 +13,7 @@
 * [USAFacts public data](https://usafacts.org/)
 
 
-###National, State and Local Governments also provide data:
+### National, State and Local Governments also provide data:
 
 * [Census Data](https://data.census.gov/cedsci/)
 * [US Govt data](https://www.data.gov/)
