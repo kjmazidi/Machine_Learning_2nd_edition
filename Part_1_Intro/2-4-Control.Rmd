@@ -34,9 +34,9 @@ As an example of how to write a function, we write a function named fill_NA that
 After the function is defined, we can call it with different columns. Then we use the complete.cases() function to get rid of the remaining rows that have NAs.
 
 ```{r}
-fill_NA <- function(mean_med, v){
+fill_NA <- function(mean_med, v) {
   # fill missing values with either 1=mean or 2=median
-  if (mean_med == 1){
+  if (mean_med == 1) {
     m <- mean(v, na.rm=TRUE)
   } else {
     m <- median(v, na.rm=TRUE)
@@ -64,7 +64,7 @@ The following plots some data from the data set and 3 ablines which are 3 linear
 ```{r}
 cols <- c(6,8,1)
 plot(df$mass, df$glucose, main="PimaIndianDiabetes2")
-for (i in 1:3){
+for (i in 1:3) {
     model <- lm(glucose~df[,cols[i]], data=df)[1]
     abline(model, col=i)
 }
